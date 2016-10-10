@@ -38,6 +38,8 @@ growthF6 = full_data_F6 %>% select(Litter_ID_new:Sex,
 cor(growthF6[,growth_traits])
 eVec = eigen(cov(growthF6[,growth_traits]))$vectors
 growthF6$fast = as.matrix(growthF6[, growth_traits]) %*% eVec[,1]
+growthF6$fast[growthF6$Sex == "M"] = scale(growthF6$fast[growthF6$Sex == "M"])
+growthF6$fast[growthF6$Sex == "F"] = scale(growthF6$fast[growthF6$Sex == "F"])
 m_full_F6 = gather(growthF6, variable, value, growth_D0D3:growth_D42D49)
 
 cor(growthF6$fast, growthF6$Final_weight)
@@ -46,5 +48,7 @@ m_full_F6$variable = factor(m_full_F6$variable, levels = growth_traits)
 m_full_F6$growth = c(3, 7, 14, 21, 28, 35, 42, 49)[as.numeric(m_full_F6$variable)]
 
 ggplot(m_full_F6, aes(variable, value, group = variable)) + geom_boxplot()
-ggplot(m_full_F6, aes(growth, value, group = ID, color = fast)) + geom_line(alpha = 0.1) + scale_color_viridis()
+ggplot(m_full_F6, aes(growth, value, group = ID)) + geom_line(alpha = 0.1)
+ggplot(m_full_F6, aes(growth, value, group = ID, color = fast)) + geom_line(alpha = 0.5) + scale_color_viridis() + facet_wrap(~Sex)
+
 
