@@ -14,12 +14,6 @@ full_data_F6 = read_csv("./data/Mouse phenotypes.csv") %>%
          Weight_D0:Weight_D70, Final_weight, Liver:Fat) %>%
   filter(Gen == "F6")
 
-  select(filter(read_csv("./data/Mouse phenotypes.csv"), Gen == "F6"), Litter_ID_new:Sex, 
-         Gen, Pat_ID, Mat_ID, Nurse_ID, Litter_size_birth, 
-         Birth_litter_size_weaning, Foster_litter_size_weaning,
-         Weight_D0:Weight_D70, Final_weight, Liver:Fat) 
-  
-
 full_data_F6[full_data_F6$ID == 4033,"Weight_D42"] = 26.94
 
 full_data_F6 <- mutate(full_data_F6, 
