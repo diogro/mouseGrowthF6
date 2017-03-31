@@ -4,7 +4,6 @@ library(tidyr)
 library(ggplot2)
 library(viridis)
 library(cowplot)
-library(cowsay)
 
 
 full_data_F6 = read_csv("./data/Mouse phenotypes.csv") %>%
