@@ -25,6 +25,9 @@ full_data_F6 <- mutate(full_data_F6,
     growth_D35D42 = Weight_D42 - Weight_D35,
     growth_D42D49 = Weight_D49 - Weight_D42)
 
+weight_traits = c("Weight_D0", "Weight_D3", "Weight_D7", "Weight_D14", "Weight_D21",
+                  "Weight_D28", "Weight_D35", "Weight_D42", "Weight_D49")
+
 growth_traits = c("growth_D0D3", "growth_D3D7", "growth_D7D14", "growth_D14D21", "growth_D21D28",
                   "growth_D28D35", "growth_D35D42", "growth_D42D49")
 
@@ -39,7 +42,7 @@ growthF6 = full_data_F6 %>% select(Litter_ID_new:Sex,
 weightF6 = full_data_F6 %>% select(Litter_ID_new:Sex, 
                                    Gen, Pat_ID, Mat_ID, Nurse_ID, Litter_size_birth, 
                                    Birth_litter_size_weaning, Foster_litter_size_weaning, 
-                                   Weight_D3:Weight_D49) %>% na.omit
+                                   Weight_D0:Weight_D49) %>% na.omit
 
 eVec
 cor(growthF6[,growth_traits])
