@@ -33,7 +33,14 @@ filter(full_data_F6, growth_D35D42 > 100)
 
 growthF6 = full_data_F6 %>% select(Litter_ID_new:Sex, 
                         Gen, Pat_ID, Mat_ID, Nurse_ID, Litter_size_birth, 
-                        Birth_litter_size_weaning, Foster_litter_size_weaning, growth_D0D3:growth_D42D49, Final_weight) %>% na.omit
+                        Birth_litter_size_weaning, Foster_litter_size_weaning, 
+                        growth_D0D3:growth_D42D49, Final_weight) %>% na.omit
+
+weightF6 = full_data_F6 %>% select(Litter_ID_new:Sex, 
+                                   Gen, Pat_ID, Mat_ID, Nurse_ID, Litter_size_birth, 
+                                   Birth_litter_size_weaning, Foster_litter_size_weaning, 
+                                   Weight_D3:Weight_D49) %>% na.omit
+
 eVec
 cor(growthF6[,growth_traits])
 eVec = eigen(cov(growthF6[,growth_traits]))$vectors
