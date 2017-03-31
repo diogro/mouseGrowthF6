@@ -20,7 +20,7 @@ TestRun = gcFitModel(times, weightF6[1,weight_traits], control = grofit.control(
 summary(TestRun$nls)
 plot(TestRun)
 
-N = 100
+N = nrow(weightF6)
 K = length(weight_traits)
 
 stan_data = list(N = N,
@@ -42,7 +42,8 @@ summary(partialPooledFit, pars = "sigma_mu")
 summary(partialPooledFit, pars = c("A_0", "", "lambda"))
 summary(partialPooledFit, pars = c("A", "mu", "lambda"))
 
-plot(partialPooledFit, pars = c("A", "mu", "lambda"))
+plot(partialPooledFit, pars = c("mu_i"))
+plot(partialPooledFit, pars = c("A"))
 plot(partialPooledFit, pars = c("A_0", "A_sex", "mu_0", "mu_sex"))
 
 

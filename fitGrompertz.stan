@@ -17,22 +17,22 @@ data {
 }
 
 parameters {
-  real sigma;
+  real<lower=0> sigma;
 
   real<lower = 0> A_0;
   real A_sex;
-  real A_i[N];
-  real sigma_A;
+  real A_tilde[N];
+  real<lower=0> sigma_A;
     
   real<lower = 0> mu_0;
   real mu_sex;
-  real mu_i[N];
-  real sigma_mu;
+  real mu_tilde[N];
+  real<lower=0> sigma_mu;
   
   real lambda_0;
   real lambda_sex;
-  real lambda_i[N];
-  real sigma_lambda;
+  real lambda_tilde[N];
+  real<lower=0> sigma_lambda;
 }
 
 transformed parameters{
@@ -40,10 +40,19 @@ transformed parameters{
   vector<lower = 0>[N] mu;
   vector[N] lambda;
   
+  real A_i[N];
+  real mu_i[N];
+  real lambda_i[N];
+  
   for(n in 1:N){
-    A[n]      = 10 * (A_0 + sex[n] *      A_sex +      A_i[n] * sigma_A);
-    mu[n]     =      mu_0 + sex[n] *     mu_sex +     mu_i[n] * sigma_mu;
-    lambda[n] =  lambda_0 + sex[n] * lambda_sex + lambda_i[n] * sigma_lambda;
+    
+    A_i[n] = A_tilde[n] * sigma_A;
+    mu_i[n] = mu_tilde[n] * sigma_mu;
+    lambda_i[n] = lambda_tilde[n] * sigma_lambda;
+    
+    A[n]      = 10 * (A_0 + sex[n] *      A_sex +      A_i[n]);
+    mu[n]     =      mu_0 + sex[n] *     mu_sex +     mu_i[n];
+    lambda[n] =  lambda_0 + sex[n] * lambda_sex + lambda_i[n];
   }
   
 }
@@ -70,7 +79,7 @@ model {
   sigma_mu ~ cauchy(0, 1);
   sigma_lambda ~ cauchy(0, 1);
 
-  A_i ~ normal(0, 1);
-  mu_i ~ normal(0, 1);
-  lambda_i ~ normal(0, 1);
+  A_tilde ~ normal(0, 1);
+  mu_tilde ~ normal(0, 1);
+  lambda_tilde ~ normal(0, 1);
 }
