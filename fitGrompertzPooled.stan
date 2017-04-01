@@ -19,15 +19,7 @@ parameters {
   real<lower = 0> A_0;
   real<lower = 0> mu_0;
   real lambda_0;
-  real sigma;
-  
-  real sigma_A;
-  real sigma_mu;
-  real sigma_lambda;
-  
-  vector[N] A_i;
-  vector[N] mu_i;
-  vector[N] lambda_i;
+  real<lower = 0> sigma;
 }
 
 model {
