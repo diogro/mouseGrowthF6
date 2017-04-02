@@ -9,11 +9,11 @@ functions {
 
 data {
     int<lower=0> N; // individuals
-    int<lower=1> K; // traits
+    int<lower=1> M; // measurements
     int<lower = 0, upper = 1> sex[N];
-    int<lower = 1, upper = N> ind[K*N];
-    vector[K*N] time; // times
-    vector[K*N] y; // weights
+    int<lower = 1, upper = N> ind[M];
+    vector[M] time; // times
+    vector[M] y; // weights
 }
 
 parameters {
@@ -58,9 +58,9 @@ transformed parameters{
 }
 
 model {
-  vector[K*N] x;
+  vector[M] x;
   
-  for (i in 1:(N*K)){
+  for (i in 1:(M)){
       x[i] = logistic(time[i], A[ind[i]], mu[ind[i]], lambda[ind[i]]);
   }
   y ~ normal(x, sigma);

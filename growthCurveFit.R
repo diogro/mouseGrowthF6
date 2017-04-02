@@ -7,6 +7,8 @@ options(mc.cores = parallel::detectCores())
 
 source("./read_F6_phenotypes.R")
 
+
+
 times = c(0, 3, seq(7, 56, 7))
 
 mus = sapply(1:nrow(weightF6), function(i) coef(gcFitModel(times, weightF6[i,weight_traits], control = grofit.control(model.type = "gompertz"))$nls)["mu"])
@@ -17,17 +19,18 @@ summary(TestRun$nls)
 plot(TestRun)
 
 N = nrow(weightF6)
-K = length(weight_traits)
+
+wide_weight = weightF6[1:N,] %>% mutate(ind = 1:N) %>% gather(trait, value, Weight_D0:Weight_D56) %>% mutate(times = as.numeric(unlist(gsub("[^0-9]", "", unlist(trait))))) %>% filter(!is.na(value))
 
 stan_data = list(N = N,
-                 K = K,
-                 ind = rep(1:N, K),
-                 sex = (as.numeric(factor(weightF6$Sex)) - 1)[1:N],
-                 time = rep(times, each = N),
-                 y = as.numeric(as.matrix((weightF6[1:N,weight_traits]))))
+                 M = nrow(wide_weight),
+                 ind = wide_weight$ind,
+                 sex = (as.numeric(factor(weightF6$Sex[1:N])) - 1),
+                 time = wide_weight$times,
+                 y = wide_weight$value)
 
 partialPooledFit = stan(file = "fitGrompertz.stan", model_name = "partial_pooled_gompertz", data = stan_data, 
-                 iter = 1000, control = list(adapt_delta = 0.8))
+                 iter = 1000, control = list(adapt_delta = 0.9))
 
 plot(partialPooledFit, pars = c("mu_i"))
 plot(partialPooledFit, pars = c("A"))
@@ -36,7 +39,6 @@ plot(partialPooledFit, pars = c("A_0", "A_sex", "mu_0", "mu_sex"))
 coefs = summary(partialPooledFit, pars = c("A_0", "A_sex", "mu_0", "mu_sex", "lambda_0", "lambda_sex"))$summary[,"mean"]
 all_coefs = summary(partialPooledFit, pars = c("A", "mu", "lambda"))$summary[,"mean"]
 
-wide_weight = weightF6[1:N,] %>% gather(trait, value, Weight_D0:Weight_D56) %>% mutate(times = rep(times, each = N))
 grid <- with(wide_weight, seq(min(times), max(times), length = 100))
 gompertz_mean_curve <- ddply(wide_weight, "Sex", function(df) {
   data.frame( 
@@ -58,7 +60,7 @@ gompertz_ID_curve <- ddply(wide_weight, .(Sex, ID), function(df) {
 }
 )
 
-ggplot(wide_weight, aes(times, value, group = ID)) + geom_text(aes(label = ID), alpha = 1) + facet_wrap(~Sex) +
+ggplot(wide_weight, aes(times, value, group = ID)) + geom_jitter(alpha = 0.1) + facet_wrap(~Sex) +
   geom_line(aes(y = curve), data = gompertz_ID_curve, colour = "gray", alpha = 0.1) + 
   geom_line(aes(y = curve, group = 1), data = gompertz_mean_curve, colour = "red")
   
@@ -75,7 +77,6 @@ plot(partialPooledLogistic, pars = c("A_0", "A_sex", "mu_0", "mu_sex"))
 coefsLogistic = summary(partialPooledLogistic, pars = c("A_0", "A_sex", "mu_0", "mu_sex", "lambda_0", "lambda_sex"))$summary[,"mean"]
 all_coefsLogistic = summary(partialPooledLogistic, pars = c("A", "mu", "lambda"))$summary[,"mean"]
 
-wide_weight = weightF6[1:N,] %>% gather(trait, value, Weight_D0:Weight_D56) %>% mutate(times = rep(times, each = N))
 grid <- with(wide_weight, seq(min(times), max(times), length = 100))
 logistic_mean_curve <- ddply(wide_weight, "Sex", function(df) {
   data.frame( 

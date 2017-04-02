@@ -40,8 +40,7 @@ growthF6 = full_data_F6 %>% select(Litter_ID_new:Sex,
 weightF6 = full_data_F6 %>% select(Litter_ID_new:Sex, 
                                    Gen, Pat_ID, Mat_ID, Nurse_ID, Litter_size_birth, 
                                    Birth_litter_size_weaning, Foster_litter_size_weaning, 
-                                   Weight_D0:Weight_D56) %>% na.omit
-
+                                   Weight_D0:Weight_D56)
 
 eVec = eigen(cov(growthF6[,growth_traits]))$vectors
 growthF6$fast = as.matrix(growthF6[, growth_traits]) %*% eVec[,1]
