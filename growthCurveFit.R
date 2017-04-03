@@ -3,16 +3,11 @@ library(grofit)
 library(plyr)
 
 rstan_options(auto_write = TRUE)
-options(mc.cores = parallel::detectCores())
+options(mc.cores = 2)
 
 source("./read_F6_phenotypes.R")
 
-
-
 times = c(0, 3, seq(7, 56, 7))
-
-mus = sapply(1:nrow(weightF6), function(i) coef(gcFitModel(times, weightF6[i,weight_traits], control = grofit.control(model.type = "gompertz"))$nls)["mu"])
-hist(unlist(mus))
 
 TestRun = gcFitModel(times, weightF6[1,weight_traits])
 summary(TestRun$nls)
@@ -29,7 +24,7 @@ stan_data = list(N = N,
                  time = wide_weight$times,
                  y = wide_weight$value)
 
-partialPooledFit = stan(file = "fitGrompertz.stan", model_name = "partial_pooled_gompertz", data = stan_data, 
+partialPooledFit = stan(file = "fitGompertz.stan", model_name = "partial_pooled_gompertz", data = stan_data, 
                  iter = 1000, control = list(adapt_delta = 0.9))
 
 plot(partialPooledFit, pars = c("mu_i"))
@@ -67,12 +62,26 @@ ggplot(wide_weight, aes(times, value, group = ID)) + geom_jitter(alpha = 0.1) + 
 
 #### Logistic
 
+N = nrow(weightF6)
+
+wide_weight = weightF6[1:N,] %>% mutate(ind = 1:N) %>% gather(trait, value, Weight_D0:Weight_D56) %>% mutate(times = as.numeric(unlist(gsub("[^0-9]", "", unlist(trait))))) %>% filter(!is.na(value))
+
+stan_data = list(N = N,
+                 M = nrow(wide_weight),
+                 ind = wide_weight$ind,
+                 sex = (as.numeric(factor(weightF6$Sex[1:N])) - 1),
+                 time = wide_weight$times,
+                 y = wide_weight$value)
+
 partialPooledLogistic = stan(file = "fitLogistic.stan", model_name = "partial_pooled_logistic", data = stan_data, 
-                        iter = 1000, control = list(adapt_delta = 0.9))
+                        iter = 2000, control = list(adapt_delta = 0.99))
 
 plot(partialPooledLogistic, pars = c("mu_i"))
 plot(partialPooledLogistic, pars = c("A"))
-plot(partialPooledLogistic, pars = c("A_0", "A_sex", "mu_0", "mu_sex"))
+plot(partialPooledLogistic, pars = c("mu"))
+plot(partialPooledLogistic, pars = c("lambda_0", "lambda_sex"))
+plot(partialPooledLogistic, pars = c("A_0", "A_sex"))
+plot(partialPooledLogistic, pars = c("mu_0", "mu_sex"))
 
 coefsLogistic = summary(partialPooledLogistic, pars = c("A_0", "A_sex", "mu_0", "mu_sex", "lambda_0", "lambda_sex"))$summary[,"mean"]
 all_coefsLogistic = summary(partialPooledLogistic, pars = c("A", "mu", "lambda"))$summary[,"mean"]
