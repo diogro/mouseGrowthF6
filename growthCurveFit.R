@@ -3,7 +3,7 @@ library(grofit)
 library(plyr)
 
 rstan_options(auto_write = TRUE)
-options(mc.cores = 2)
+options(mc.cores = 4)
 
 source("./read_F6_phenotypes.R")
 
@@ -24,11 +24,14 @@ stan_data = list(N = N,
                  time = wide_weight$times,
                  y = wide_weight$value)
 
-partialPooledFit = stan(file = "fitGompertz.stan", model_name = "partial_pooled_gompertz", data = stan_data, 
-                 iter = 1000, control = list(adapt_delta = 0.9))
+#partialPooledFit = stan(file = "fitGompertz.stan", model_name = "partial_pooled_gompertz", data = stan_data, 
+#                 iter = 2000, control = list(adapt_delta = 0.99))
+#saveRDS(partialPooledFit, "./Rdatas/fit_gompertz.rds")
+partialPooledFit = readRDS("./Rdatas/fit_gompertz.rds")
 
 plot(partialPooledFit, pars = c("mu_i"))
 plot(partialPooledFit, pars = c("A"))
+plot(partialPooledFit, pars = c("mu"))
 plot(partialPooledFit, pars = c("A_0", "A_sex", "mu_0", "mu_sex"))
 
 coefs = summary(partialPooledFit, pars = c("A_0", "A_sex", "mu_0", "mu_sex", "lambda_0", "lambda_sex"))$summary[,"mean"]
@@ -73,8 +76,10 @@ stan_data = list(N = N,
                  time = wide_weight$times,
                  y = wide_weight$value)
 
-partialPooledLogistic = stan(file = "fitLogistic.stan", model_name = "partial_pooled_logistic", data = stan_data, 
-                        iter = 2000, control = list(adapt_delta = 0.99))
+#partialPooledLogistic = stan(file = "fitLogistic.stan", model_name = "partial_pooled_logistic", data = stan_data, 
+#                        iter = 2000, control = list(adapt_delta = 0.99))
+#saveRDS(partialPooledLogistic, "./Rdatas/fit_logistics.rds")
+partialPooledLogistic = readRDS("./Rdatas/fit_logistics.rds")
 
 plot(partialPooledLogistic, pars = c("mu_i"))
 plot(partialPooledLogistic, pars = c("A"))
@@ -110,3 +115,4 @@ logistic_ID_curve <- ddply(wide_weight, .(Sex, ID), function(df) {
 ggplot(wide_weight, aes(times, value, group = ID)) + geom_jitter(alpha = 0.1) + facet_wrap(~Sex) +
   geom_line(aes(y = curve), data = logistic_ID_curve, colour = "gray", alpha = 0.1) + 
   geom_line(aes(y = curve, group = 1), data = logistic_mean_curve, colour = "red")
+
