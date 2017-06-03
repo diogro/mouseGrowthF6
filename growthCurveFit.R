@@ -1,6 +1,6 @@
-library(rstan)
+if(!require(rstan)){install.packages("rstan"); library(rstan)}
 if(!require(grofit)){install.packages("grofit"); library(grofit)}
-library(plyr)
+if(!require(shinystan)){install.packages("shinystan"); library(shinystan)}
 
 rstan_options(auto_write = TRUE)
 options(mc.cores = 4)
@@ -76,9 +76,9 @@ stan_data = list(N = N,
                  time = wide_weight$times,
                  y = wide_weight$value)
 
-#partialPooledLogistic = stan(file = "fitLogistic.stan", model_name = "partial_pooled_logistic", data = stan_data, 
-#                        iter = 2000, control = list(adapt_delta = 0.99))
-#saveRDS(partialPooledLogistic, "./Rdatas/fit_logistics.rds")
+partialPooledLogistic = stan(file = "fitLogistic.stan", model_name = "partial_pooled_logistic", data = stan_data, 
+                        iter = 2000, control = list(adapt_delta = 0.99))
+saveRDS(partialPooledLogistic, "./Rdatas/fit_logistics.rds")
 partialPooledLogistic = readRDS("./Rdatas/fit_logistics.rds")
 
 plot(partialPooledLogistic, pars = c("mu_i"))
