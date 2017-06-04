@@ -76,10 +76,12 @@ stan_data = list(N = N,
                  time = wide_weight$times,
                  y = wide_weight$value)
 
-partialPooledLogistic = stan(file = "fitLogistic.stan", model_name = "partial_pooled_logistic", data = stan_data, 
+#partialPooledLogistic = stan(file = "fitLogistic.stan", model_name = "partial_pooled_logistic", data = stan_data, 
                         iter = 2000, control = list(adapt_delta = 0.99))
-saveRDS(partialPooledLogistic, "./Rdatas/fit_logistics.rds")
+#saveRDS(partialPooledLogistic, "./Rdatas/fit_logistics.rds")
 partialPooledLogistic = readRDS("./Rdatas/fit_logistics.rds")
+
+launch_shinystan(partialPooledLogistic)
 
 plot(partialPooledLogistic, pars = c("mu_i"))
 plot(partialPooledLogistic, pars = c("A"))
