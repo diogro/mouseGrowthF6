@@ -1,19 +1,26 @@
 library(readr)
+library(plyr)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(viridis)
 library(cowplot)
-
+library(MasterBayes)
 
 full_data_F6 = read_csv("./data/Mouse phenotypes.csv") %>%
-  select(Litter_ID_new:Sex, 
+  dplyr::select(Litter_ID_new:Sex, 
          Gen, Pat_ID, Mat_ID, Nurse_ID, Litter_size_birth, 
          Birth_litter_size_weaning, Foster_litter_size_weaning,
          Weight_D0:Weight_D70, Final_weight, Liver:Fat) %>%
   filter(Gen == "F6")
 
-full_data_F6[full_data_F6$ID == 4033,"Weight_D42"] = 26.94
+raw_pedigree = read_csv("./data/Mouse phenotypes.csv") %>% 
+  dplyr::select(ID, Mat_ID, Pat_ID) %>%
+  dplyr::rename(id = ID, dam = Mat_ID, sire = Pat_ID)
+
+raw_pedigree$sire[raw_pedigree$sire == "167"] = "16700"
+
+pedigree = as.data.frame(raw_pedigree) %>% insertPed %>% orderPed %>% prunePed(keep = full_data_F6$ID, make.base = TRUE)
 
 full_data_F6 <- mutate(full_data_F6, 
     growth_D0D3   = Weight_D3 - Weight_D0,
@@ -32,12 +39,12 @@ weight_traits = c("Weight_D0", "Weight_D3", "Weight_D7", "Weight_D14", "Weight_D
 growth_traits = c("growth_D0D3", "growth_D3D7", "growth_D7D14", "growth_D14D21", "growth_D21D28",
                   "growth_D28D35", "growth_D35D42", "growth_D42D49", "growth_D49D56")
 
-growthF6 = full_data_F6 %>% select(Litter_ID_new:Sex, 
+growthF6 = full_data_F6 %>% dplyr::select(Litter_ID_new:Sex, 
                         Gen, Pat_ID, Mat_ID, Nurse_ID, Litter_size_birth, 
                         Birth_litter_size_weaning, Foster_litter_size_weaning, 
                         growth_D0D3:growth_D49D56, Final_weight) %>% na.omit
 
-weightF6 = full_data_F6 %>% select(Litter_ID_new:Sex, 
+weightF6 = full_data_F6 %>% dplyr::select(Litter_ID_new:Sex, 
                                    Gen, Pat_ID, Mat_ID, Nurse_ID, Litter_size_birth, 
                                    Birth_litter_size_weaning, Foster_litter_size_weaning, 
                                    Weight_D0:Weight_D56)
@@ -47,15 +54,3 @@ growthF6$fast = as.matrix(growthF6[, growth_traits]) %*% eVec[,1]
 growthF6$fast[growthF6$Sex == "M"] = scale(growthF6$fast[growthF6$Sex == "M"])
 growthF6$fast[growthF6$Sex == "F"] = scale(growthF6$fast[growthF6$Sex == "F"])
 m_full_F6 = gather(growthF6, period, growth, growth_D0D3:growth_D49D56)
-
-cor(growthF6$fast, growthF6$Final_weight)
-
-m_full_F6$period = factor(m_full_F6$period, levels = growth_traits)
-m_full_F6$days = c(3, 7, 14, 21, 28, 35, 42, 49, 56)[as.numeric(m_full_F6$period)]
-
-ggplot(m_full_F6, aes(period, growth, group = period)) + geom_boxplot()
-ggplot(m_full_F6, aes(days, growth, group = ID)) + geom_line(alpha = 0.1)
-ggplot(m_full_F6, aes(days, growth, group = ID, color = fast)) + geom_line(alpha = 0.5) + scale_color_viridis()# + facet_wrap(~Sex)
-
-max(growthF6$Final_weight)
-laply(growthF6[,growth_traits], max)

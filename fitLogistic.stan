@@ -54,7 +54,6 @@ transformed parameters{
     mu[n]     =      mu_0 + sex[n] *     mu_sex +     mu_i[n];
     lambda[n] =  lambda_0 + sex[n] * lambda_sex + lambda_i[n];
   }
-  
 }
 
 model {
