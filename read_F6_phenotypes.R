@@ -1,11 +1,13 @@
-library(readr)
-library(plyr)
-library(dplyr)
-library(tidyr)
-library(ggplot2)
-library(viridis)
-library(cowplot)
-library(MasterBayes)
+if(!require(readr)){install.packages("readr"); library(readr)}
+if(!require(plyr)){install.packages("plyr"); library(plyr)}
+if(!require(dplyr)){install.packages("dplyr"); library(dplyr)}
+if(!require(tidyr)){install.packages("tidyr"); library(tidyr)}
+if(!require(ggplot2)){install.packages("ggplot2"); library(ggplot2)}
+if(!require(viridis)){install.packages("viridis"); library(viridis)}
+if(!require(cowplot)){install.packages("cowplot"); library(cowplot)}
+if(!require(MasterBayes)){install.packages("MasterBayes"); library(MasterBayes)}
+
+
 
 full_data_F6 = read_csv("./data/Mouse phenotypes.csv") %>%
   dplyr::select(Litter_ID_new:Sex, 
