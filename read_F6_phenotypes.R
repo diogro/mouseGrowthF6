@@ -6,8 +6,7 @@ if(!require(ggplot2)){install.packages("ggplot2"); library(ggplot2)}
 if(!require(viridis)){install.packages("viridis"); library(viridis)}
 if(!require(cowplot)){install.packages("cowplot"); library(cowplot)}
 if(!require(MasterBayes)){install.packages("MasterBayes"); library(MasterBayes)}
-
-
+if(!require(MCMCglmm)){install.packages("MCMCglmm"); library(MCMCglmm)}
 
 full_data_F6 = read_csv("./data/Mouse phenotypes.csv") %>%
   dplyr::select(Litter_ID_new:Sex, 
@@ -56,3 +55,24 @@ growthF6$fast = as.matrix(growthF6[, growth_traits]) %*% eVec[,1]
 growthF6$fast[growthF6$Sex == "M"] = scale(growthF6$fast[growthF6$Sex == "M"])
 growthF6$fast[growthF6$Sex == "F"] = scale(growthF6$fast[growthF6$Sex == "F"])
 m_full_F6 = gather(growthF6, period, growth, growth_D0D3:growth_D49D56)
+
+m_full_F6$period = factor(m_full_F6$period, levels = growth_traits)
+ggplot(m_full_F6, aes(period, growth, group = ID)) + geom_line(alpha = 0.1)
+
+necropsyF6 = full_data_F6 %>% dplyr::select(Litter_ID_new:Sex, 
+                                            Gen, Pat_ID, Mat_ID, Nurse_ID, Litter_size_birth, 
+                                            Birth_litter_size_weaning, Foster_litter_size_weaning, 
+                                            Liver:Fat)
+
+if(!require(superheat)){install.packages("superheat"); library(superheat)}
+if(!require(corrplot)){install.packages("corrplot"); library(corrplot)}
+
+ggpairs(weightF6, mapping = aes(color = Sex), columns = weight_traits, upper = "blank")
+gcorr = cor(residuals(lm(as.matrix(growthF6[,growth_traits])~growthF6$Sex)))
+gcorr_M = cor(growthF6[growthF6$Sex == "M",growth_traits])
+gcorr_F = cor(growthF6[growthF6$Sex == "F",growth_traits])
+plot_grid(superheat(gcorr_M), superheat(gcorr_F))
+colnames(gcorr) = gsub("growth_", "", growth_traits)
+png(filename = "~/Dropbox/labbio/relatorios/fapesp/2017-08-10-Doutorado-Parcial-2/corr_crescimento.png", width = 600, height = 600)
+corrplot = corrplot.mixed(gcorr, upper = "ellipse")
+dev.off()
