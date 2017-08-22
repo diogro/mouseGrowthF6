@@ -7,6 +7,7 @@ if(!require(viridis)){install.packages("viridis"); library(viridis)}
 if(!require(cowplot)){install.packages("cowplot"); library(cowplot)}
 if(!require(MasterBayes)){install.packages("MasterBayes"); library(MasterBayes)}
 if(!require(MCMCglmm)){install.packages("MCMCglmm"); library(MCMCglmm)}
+if(!require(pedantics)){install.packages("pedantics"); library(pedantics)}
 
 full_data_F6 = read_csv("./data/Mouse phenotypes.csv") %>%
   dplyr::select(Litter_ID_new:Sex, 
@@ -15,13 +16,10 @@ full_data_F6 = read_csv("./data/Mouse phenotypes.csv") %>%
          Weight_D0:Weight_D70, Final_weight, Liver:Fat) %>%
   filter(Gen == "F6")
 
-raw_pedigree = read_csv("./data/Mouse phenotypes.csv") %>% 
-  dplyr::select(ID, Mat_ID, Pat_ID) %>%
-  dplyr::rename(id = ID, dam = Mat_ID, sire = Pat_ID)
+full_data_F6$ID[full_data_F6$ID == 3202] = "3302"
 
-raw_pedigree$sire[raw_pedigree$sire == "167"] = "16700"
-
-pedigree = as.data.frame(raw_pedigree) %>% insertPed %>% orderPed %>% prunePed(keep = full_data_F6$ID, make.base = TRUE)
+pedigree = as.data.frame(read.csv("./data/Intercross_pedigree.csv")) %>% 
+  rename(id = animal) %>% orderPed
 
 full_data_F6 <- mutate(full_data_F6, 
     growth_D0D3   = Weight_D3 - Weight_D0,
@@ -59,20 +57,22 @@ m_full_F6 = gather(growthF6, period, growth, growth_D0D3:growth_D49D56)
 m_full_F6$period = factor(m_full_F6$period, levels = growth_traits)
 ggplot(m_full_F6, aes(period, growth, group = ID)) + geom_line(alpha = 0.1)
 
+necropsy_traits = c("Liver", "Spleen", "Kidney_total", "Heart", "Fat")
+
 necropsyF6 = full_data_F6 %>% dplyr::select(Litter_ID_new:Sex, 
                                             Gen, Pat_ID, Mat_ID, Nurse_ID, Litter_size_birth, 
                                             Birth_litter_size_weaning, Foster_litter_size_weaning, 
                                             Liver:Fat)
-
-if(!require(superheat)){install.packages("superheat"); library(superheat)}
-if(!require(corrplot)){install.packages("corrplot"); library(corrplot)}
-
-ggpairs(weightF6, mapping = aes(color = Sex), columns = weight_traits, upper = "blank")
-gcorr = cor(residuals(lm(as.matrix(growthF6[,growth_traits])~growthF6$Sex)))
-gcorr_M = cor(growthF6[growthF6$Sex == "M",growth_traits])
-gcorr_F = cor(growthF6[growthF6$Sex == "F",growth_traits])
-plot_grid(superheat(gcorr_M), superheat(gcorr_F))
-colnames(gcorr) = gsub("growth_", "", growth_traits)
-png(filename = "~/Dropbox/labbio/relatorios/fapesp/2017-08-10-Doutorado-Parcial-2/corr_crescimento.png", width = 600, height = 600)
-corrplot = corrplot.mixed(gcorr, upper = "ellipse")
-dev.off()
+# 
+# if(!require(superheat)){install.packages("superheat"); library(superheat)}
+# if(!require(corrplot)){install.packages("corrplot"); library(corrplot)}
+# 
+# ggpairs(weightF6, mapping = aes(color = Sex), columns = weight_traits, upper = "blank")
+# corrP = cor(residuals(lm(as.matrix(growthF6[,growth_traits])~growthF6$Sex)))
+# gcorr_M = cor(growthF6[growthF6$Sex == "M",growth_traits])
+# gcorr_F = cor(growthF6[growthF6$Sex == "F",growth_traits])
+# plot_grid(superheat(gcorr_M), superheat(gcorr_F))
+# colnames(gcorr) = gsub("growth_", "", growth_traits)
+# png(filename = "~/Dropbox/labbio/relatorios/fapesp/2017-08-10-Doutorado-Parcial-2/corr_crescimento.png", width = 600, height = 600)
+# corrplot = corrplot.mixed(gcorr, upper = "ellipse")
+# dev.off()
