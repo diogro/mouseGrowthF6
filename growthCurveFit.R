@@ -75,7 +75,8 @@ stan_data = list(N = N,
                  sex = (as.numeric(factor(weightF6$Sex[1:N])) - 1),
                  time = wide_weight$times,
                  y = wide_weight$value)
-
+attach(stan_data)
+stan_rdump(names(stan_data), file = "logistc_fit_data.R")
 #partialPooledLogistic = stan(file = "fitLogistic.stan", 
 #                             model_name = "partial_pooled_logistic", data = stan_data, 
 #                             iter = 2000, control = list(adapt_delta = 0.99))
