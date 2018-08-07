@@ -114,12 +114,12 @@ logistic_ID_curve <- ddply(wide_weight, .(Sex, ID), function(df) {
 }
 )
 
-curves_plot = ggplot(wide_weight, aes(times, value, group = ID)) + geom_jitter(alpha = 0.1) + facet_wrap(~Sex) +
-  geom_line(aes(y = curve), data = logistic_ID_curve, colour = "gray", alpha = 0.1) + 
+curves_plot = ggplot(wide_weight, aes(times, value, group = ID)) + geom_jitter(alpha = 0.3, size = 0.6) + facet_wrap(~Sex) +
+  geom_line(aes(y = curve), data = logistic_ID_curve, colour = "gray", alpha = 0.15) + 
   geom_line(aes(y = curve, group = 1), data = logistic_mean_curve, colour = "red") + 
   labs(x = "Dias", y = "Peso (g)")
-save_plot("~/Dropbox/labbio/relatorios/fapesp/2017-08-10-Doutorado-Parcial-2/growth-curves.png", curves_plot,
-          base_width = 6, base_aspect_ratio = 1.8, ncol = 2)
+save_plot("~/Desktop/growth-curves.png", curves_plot,
+          base_height = 6, base_aspect_ratio = 1, ncol = 2)
 
 
 ggplot(wide_weight, aes(times, value, group = ID)) + geom_text(data = filter(wide_weight, ID == 4183), aes(label = ID)) + facet_wrap(~Sex) + geom_line(aes(y = curve), data = logistic_ID_curve, colour = "gray", alpha = 0.1) + 
