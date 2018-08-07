@@ -55,3 +55,20 @@ lt = function(x) x[lower.tri(x, diag = TRUE)]
 data.frame(P = lt(P), G = lt(G), R = lt(R), T = lt(G + R)) %>%
   ggplot(aes(P, T)) + geom_point() + geom_abline(slope = 1, intercept = 0)
 
+corridor = as.matrix(read_delim('~/Dropbox/labbio/data/evomod_julia_data/corridor.txt',delim = "\t", col_names = FALSE))
+divergent = as.matrix(read_delim('~/Dropbox/labbio/data/evomod_julia_data/divergent.txt',delim = "\t", col_names = FALSE))
+stabilizing = as.matrix(read_delim('~/Dropbox/labbio/data/evomod_julia_data/stabilizing.txt',delim = "\t", col_names = FALSE))
+colnames(corridor) = colnames(divergent) =  colnames(stabilizing) = paste0(1:4)
+
+png("/home/diogro/Dropbox/labbio/posters/2018 - 07 - 19 - Evolution2018/corridor.png", width = 800, height = 800)
+par(mfrow = c(1, 1), cex = 3)
+corrplot.mixed(corridor, upper = "ellipse")
+dev.off()
+png("/home/diogro/Dropbox/labbio/posters/2018 - 07 - 19 - Evolution2018/divergent.png", width = 800, height = 800)
+par(mfrow = c(1, 1), cex = 3)
+corrplot.mixed(divergent, upper = "ellipse")
+dev.off()
+png("/home/diogro/Dropbox/labbio/posters/2018 - 07 - 19 - Evolution2018/stabilizing.png", width = 800, height = 800)
+par(mfrow = c(1, 1), cex = 3)
+corrplot.mixed(stabilizing, upper = "ellipse")
+dev.off()
