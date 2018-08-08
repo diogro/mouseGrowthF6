@@ -135,10 +135,11 @@ dev.off()
 save_plot("~/Desktop/pedigree.png", drawPedigree(pedigree), base_height = 8)
 
 (stain_growth = ggplot(m_growth_strain, aes(period, growth, group = Strain, color = Strain)) + geom_line(size = 1) + 
-  scale_x_discrete(labels = gsub("growth_", "", growth_traits)) + labs(y = "Growth per interval (g)", x = "Intervals") + 
+  scale_x_discrete(labels = gsub("growth_", "", growth_traits)) + labs(y = "Growth per interval (g)", x = "") + 
   geom_abline(slope = 0) + 
-    scale_color_discrete(labels = c("A13 - E+", "A22 - E-", "A23 - E-", "A31 - L+", "A41 - L-", "A42 - L-")) +
-  theme_cowplot()+ theme(legend.position=c(0.75, 0.80), text = element_text(size=20)))
+    scale_color_discrete(labels = c("A13 - E+", "A22 - E-", "A23 - E-", "A31 - L+", "A41 - L-", "A42 - L-")) + 
+    scale_x_discrete(labels = paste0(c("0 to 14", "14 to 28", "28 to 42", "42 to 56"), "\ndays")) + 
+  theme_cowplot() + theme(legend.position=c(0.75, 0.80), text = element_text(size=20), axis.text = element_text(size=20)))
   
 save_plot("~/Dropbox/labbio/posters/2018 - 07 - 19 - Evolution2018/strain_growth-curves_2w.png", stain_growth,
-          base_height = 6, base_aspect_ratio = 1)
+          base_height = 10, base_aspect_ratio = 1)
