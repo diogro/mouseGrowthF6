@@ -42,9 +42,10 @@ P = CalculateMatrix(lm(as.matrix(growthF6[,growth_traits]) ~ growthF6$Sex))
 corrP = cor(residuals(lm(as.matrix(growthF6[,growth_traits])~growthF6$Sex)))
 
 colnames(corrG) = c("0 to 14\ndays", "14 to 28\ndays", "28 to 42\ndays", "42 to 56\ndays")
-png("./data/figures/growth_Gmatrix_2w_4t.png", width = 800, height = 800)
-par(mfrow=c(1, 1), cex = 2)
-corrplot.mixed(corrG, upper = "ellipse")
+diag(corrG) = 0
+png("/home/diogro/Dropbox/labbio/posters/2018 - 07 - 19 - Evolution2018/growth_Gmatrix_2w_4t.png", width = 2200, height = 2200)
+par(mfrow=c(1, 1), cex = 4)
+corrplot.mixed(corrG, upper = "ellipse", mar = c(0, 0, 0, 0), cl.lim = c(-0.8, 0.8), addgrid.col = "black", is.corr = FALSE)
 dev.off()
 
 par(mfrow = c(1, 2))
