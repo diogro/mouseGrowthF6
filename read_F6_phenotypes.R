@@ -16,6 +16,13 @@ full_data_F6 = read_csv("./data/Mouse phenotypes.csv") %>%
          Weight_D0:Weight_D70, Final_weight, Liver:Fat) %>%
   filter(Gen == "F6")
 
+full_data_F5F6 = read_csv("./data/Mouse phenotypes.csv") %>%
+  dplyr::select(Litter_ID_new:Sex, 
+                Gen, Pat_ID, Mat_ID, Nurse_ID, Litter_size_birth, 
+                Birth_litter_size_weaning, Foster_litter_size_weaning,
+                Weight_D0:Weight_D70, Final_weight, Liver:Fat) %>%
+  filter(Gen == "F6" | Gen == "F5")
+
 full_data_Strain = read_csv("./data/Mouse phenotypes.csv") %>%
   dplyr::select(Litter_ID_new:Sex, 
                 Gen, Strain, Pat_ID, Mat_ID, Nurse_ID, Litter_size_birth, 
@@ -24,11 +31,19 @@ full_data_Strain = read_csv("./data/Mouse phenotypes.csv") %>%
   filter(Gen == "Strain")
 
 full_data_F6$ID[full_data_F6$ID == 3202] = "3302"
+full_data_F5F6$ID[full_data_F5F6$ID == 3202] = "3302"
+
 
 pedigree = as.data.frame(read.csv("./data/Intercross_pedigree.csv")) %>% 
   rename(id = animal) %>% orderPed
 
 full_data_F6 <- mutate(full_data_F6, 
+                       growth_D0D14  = Weight_D14 - Weight_D0,
+                       growth_D14D28 = Weight_D28 - Weight_D14,
+                       growth_D28D42 = Weight_D42 - Weight_D28,
+                       growth_D42D56 = Weight_D56 - Weight_D42)
+
+full_data_F5F6 <- mutate(full_data_F5F6, 
                        growth_D0D14  = Weight_D14 - Weight_D0,
                        growth_D14D28 = Weight_D28 - Weight_D14,
                        growth_D28D42 = Weight_D42 - Weight_D28,
@@ -71,6 +86,11 @@ growthF6 = full_data_F6 %>% dplyr::select(Litter_ID_new:Sex,
                         Gen, Pat_ID, Mat_ID, Nurse_ID, Litter_size_birth, 
                         Birth_litter_size_weaning, Foster_litter_size_weaning, 
                         growth_D0D14:growth_D42D56, Final_weight) %>% na.omit
+
+growthF5F6 = full_data_F5F6 %>% dplyr::select(Litter_ID_new:Sex, 
+                                          Gen, Pat_ID, Mat_ID, Nurse_ID, Litter_size_birth, 
+                                          Birth_litter_size_weaning, Foster_litter_size_weaning, 
+                                          growth_D0D14:growth_D42D56, Final_weight) %>% na.omit
 
 growthStrain = full_data_Strain %>% dplyr::select(Litter_ID_new:Sex, 
                                           Strain, Pat_ID, Mat_ID, Nurse_ID, Litter_size_birth, 

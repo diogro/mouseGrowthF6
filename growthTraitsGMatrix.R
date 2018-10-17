@@ -2,44 +2,46 @@ source("./read_F6_phenotypes.R")
 library(evolqg)
 library(corrplot)
 
-growthF6 = growthF6[complete.cases(growthF6[,growth_traits]),]
-growthF6$animal = growthF6$ID
+growthF5F6 = growthF5F6[complete.cases(growthF5F6[,growth_traits]),]
+growthF5F6$animal = growthF5F6$ID
 
 ginverse = inverseA(pedigree)
-f6 = rownames(ginverse$Ainv) %in% growthF6$ID
+f6 = rownames(ginverse$Ainv) %in% growthF5F6$ID
 Ainv = ginverse$Ainv[f6, f6]
 
-length(levels(factor(growthF6$ID)))
+length(levels(factor(growthF5F6$ID)))
 length(rownames(Ainv))
+
+levels(factor(growthF5F6$ID))[!levels(factor(growthF5F6$ID)) %in% rownames(Ainv)]
 
 n_traits = length(growth_traits)
 g_formula = paste0("cbind(", paste(growth_traits, collapse = ", "), ") ~ trait + trait:Sex - 1")
 
-growthF6_std = growthF6
-growthF6_std[,growth_traits] = scale(growthF6_std[,growth_traits])
-growthF6_sd = apply(growthF6[,growth_traits], 2, sd)
+growthF5F6_std = growthF5F6
+growthF5F6_std[,growth_traits] = scale(growthF5F6_std[,growth_traits])
+growthF5F6_sd = apply(growthF5F6[,growth_traits], 2, sd)
 prior_bi <- list(G = list(G1 = list(V = diag(n_traits), n = 1.002)),
                  R = list(V = diag(n_traits), n = 1.002))
 model_growth <- MCMCglmm(as.formula(g_formula),
                          random = ~us(trait):animal,
                          rcov = ~us(trait):units, family = rep("gaussian", n_traits),
-                         pedigree = pedigree, data = as.data.frame(growthF6_std), prior = prior_bi,
+                         pedigree = pedigree, data = as.data.frame(growthF5F6_std), prior = prior_bi,
                          nitt = 200000 + 1500, thin = 50, burnin = 1500, verbose = TRUE)
 summary(model_growth)
-save(model_growth, growthF6_sd, file = "./data/growthGfit_2w.Rdata")
+save(model_growth, growthF5F6_sd, file = "./data/growthGfit_2w.Rdata")
 load("./data/growthGfit_2w.Rdata")
 Gs = array(model_growth$VCV[,grep("animal", colnames(model_growth$VCV))], 
            c(nrow(model_growth$VCV), n_traits, n_traits))
-Gs = aaply(Gs, 1, `*`, outer(growthF6_sd, growthF6_sd))
+Gs = aaply(Gs, 1, `*`, outer(growthF5F6_sd, growthF5F6_sd))
 Rs = array(model_growth$VCV[,grep("units", colnames(model_growth$VCV))], 
            c(nrow(model_growth$VCV), n_traits, n_traits))
-Rs = aaply(Rs, 1, `*`, outer(growthF6_sd, growthF6_sd))
+Rs = aaply(Rs, 1, `*`, outer(growthF5F6_sd, growthF5F6_sd))
 G = apply(Gs, 2:3, mean)
 R = apply(Rs, 2:3, mean)
 corrGs = aaply(Gs, 1, cov2cor)
 corrG = apply(corrGs, 2:3, mean)
-P = CalculateMatrix(lm(as.matrix(growthF6[,growth_traits]) ~ growthF6$Sex))
-corrP = cor(residuals(lm(as.matrix(growthF6[,growth_traits])~growthF6$Sex)))
+P = CalculateMatrix(lm(as.matrix(growthF5F6[,growth_traits]) ~ growthF5F6$Sex))
+corrP = cor(residuals(lm(as.matrix(growthF5F6[,growth_traits])~growthF5F6$Sex)))
 
 colnames(corrG) = c("0 to 14\ndays", "14 to 28\ndays", "28 to 42\ndays", "42 to 56\ndays")
 diag(corrG) = 0
