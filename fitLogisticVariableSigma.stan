@@ -8,17 +8,19 @@ functions {
 }
 
 data {
-    int<lower=0> N; // individuals
-    int<lower=1> M; // measurements
+    int<lower=0> N;                   // individuals
+    int<lower=1> M;                   // measurements
+    int<lower=1, upper=10> n_times;   // number of time intervals
     int<lower = 0, upper = 1> sex[N];
     int<lower = 1, upper = N> ind[M];
-    vector[M] time; // times
-    vector[M] y; // weights
+    vector[M] time;                   // times
+    vector[M] time_int;               // which time class?
+    vector[M] y;                      // weights
     int<lower = 0, upper = 1> run_estimation;
 }
 
 parameters {
-  real<lower=0> sigma;
+  real<lower=0> sigma[n_times];
 
   real<lower = 0> A_0;
   real A_sex;
@@ -60,12 +62,14 @@ transformed parameters{
 model {
 
   vector[M] x;
+  vector[M] x_sigma;
 
   for (i in 1:(M)){
       x[i] = logistic(time[i], A[ind[i]], mu[ind[i]], lambda[ind[i]]);
+      x_sigma = sigma[time_int[i]];
   }
   if(run_estimation==1){
-    y ~ normal(x, sigma);
+    y ~ normal(x, x_sigma);
   }
   
   mu_0 ~ normal(0.0, 1.0);
@@ -90,11 +94,13 @@ model {
 generated quantities {
   vector[M] y_sim;
   vector[M] x_sim;
+  vector[M] x_sigma_sim;
 
   for (i in 1:(M)){
-      x_sim[i] = logistic(time[i], A[ind[i]], mu[ind[i]], lambda[ind[i]]);
+      x[i] = logistic(time[i], A[ind[i]], mu[ind[i]], lambda[ind[i]]);
+      x_sigma_sim = sigma[time_int[i]];
   }
   for(i in 1:M) {
-    y_sim[i] = normal_rng(x_sim[i], sigma);
+    y_sim[i] = normal_rng(x_sim[i], x_sigma_sim[i]);
   }
 }

@@ -28,7 +28,7 @@ model_growth <- MCMCglmm(as.formula(g_formula),
                          pedigree = pedigree, data = as.data.frame(growthF5F6_std), prior = prior_bi,
                          nitt = 200000 + 1500, thin = 50, burnin = 1500, verbose = TRUE)
 summary(model_growth)
-save(model_growth, growthF5F6_sd, file = "./data/growthGfit_2w.Rdata")
+save(model_growth, growthF5F6_sd, file = "./data/growthGfitF5F6_2w.Rdata")
 load("./data/growthGfit_2w.Rdata")
 Gs = array(model_growth$VCV[,grep("animal", colnames(model_growth$VCV))], 
            c(nrow(model_growth$VCV), n_traits, n_traits))
