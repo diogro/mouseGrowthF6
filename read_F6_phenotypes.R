@@ -1,5 +1,6 @@
 if(!require(readr)){install.packages("readr"); library(readr)}
 if(!require(plyr)){install.packages("plyr"); library(plyr)}
+if(!require(evolqg)){install.packages("evolqg"); library(evolqg)}
 if(!require(dplyr)){install.packages("dplyr"); library(dplyr)}
 if(!require(tidyr)){install.packages("tidyr"); library(tidyr)}
 if(!require(ggplot2)){install.packages("ggplot2"); library(ggplot2)}
@@ -8,6 +9,7 @@ if(!require(cowplot)){install.packages("cowplot"); library(cowplot)}
 if(!require(MasterBayes)){install.packages("MasterBayes"); library(MasterBayes)}
 if(!require(MCMCglmm)){install.packages("MCMCglmm"); library(MCMCglmm)}
 if(!require(pedantics)){install.packages("pedantics"); library(pedantics)}
+if(!require(corrplot)){install.packages("corrplot"); library(corrplot)}
 
 full_data_F6 = read_csv("./data/Mouse phenotypes.csv") %>%
   dplyr::select(Litter_ID_new:Sex, 
@@ -114,15 +116,6 @@ weightF6 = full_data_F6 %>% dplyr::select(Litter_ID_new:Sex,
                                    Birth_litter_size_weaning, Foster_litter_size_weaning, 
                                    Weight_D0:Weight_D56)
 
-eVec = eigen(cov(growthF6[,growth_traits]))$vectors
-growthF6$fast = as.matrix(growthF6[, growth_traits]) %*% eVec[,1]
-growthF6$fast[growthF6$Sex == "M"] = scale(growthF6$fast[growthF6$Sex == "M"])
-growthF6$fast[growthF6$Sex == "F"] = scale(growthF6$fast[growthF6$Sex == "F"])
-m_full_F6 = gather(growthF6, period, growth, growth_D0D3:growth_D49D56)
-
-m_full_F6$period = factor(m_full_F6$period, levels = growth_traits)
-ggplot(m_full_F6, aes(period, growth, group = ID)) + geom_line(alpha = 0.1)
-
 necropsy_traits = c("Liver", "Spleen", "Kidney_total", "Heart", "Fat")
 
 necropsyF6 = full_data_F6 %>% dplyr::select(Litter_ID_new:Sex, 
@@ -183,4 +176,3 @@ m_growth_f6$period = factor(m_growth_f6$period, levels = growth_traits)
 
 # save_plot("~/Dropbox/labbio/posters/2018 - 07 - 19 - Evolution2018/strain_growth-curves_2w.png", stain_growth,
 #           base_height = 10, base_aspect_ratio = 1)
-
