@@ -14,7 +14,7 @@ data {
     int<lower = 0, upper = 1> sex[N];
     int<lower = 1, upper = N> ind[M];
     vector[M] time;                   // times
-    vector[M] time_int;               // which time class?
+    int time_int[M];               // which time class?
     vector[M] y;                      // weights
     int<lower = 0, upper = 1> run_estimation;
 }
@@ -66,7 +66,7 @@ model {
 
   for (i in 1:(M)){
       x[i] = logistic(time[i], A[ind[i]], mu[ind[i]], lambda[ind[i]]);
-      x_sigma = sigma[time_int[i]];
+      x_sigma[i] = sigma[time_int[i]];
   }
   if(run_estimation==1){
     y ~ normal(x, x_sigma);
@@ -97,8 +97,8 @@ generated quantities {
   vector[M] x_sigma_sim;
 
   for (i in 1:(M)){
-      x[i] = logistic(time[i], A[ind[i]], mu[ind[i]], lambda[ind[i]]);
-      x_sigma_sim = sigma[time_int[i]];
+      x_sim[i] = logistic(time[i], A[ind[i]], mu[ind[i]], lambda[ind[i]]);
+      x_sigma_sim[i] = sigma[time_int[i]];
   }
   for(i in 1:M) {
     y_sim[i] = normal_rng(x_sim[i], x_sigma_sim[i]);

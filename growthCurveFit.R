@@ -82,22 +82,15 @@ stan_data = list(N = N,
 # stan_rdump(names(stan_data), file = "logistc_fit_data.R")
 partialPooledLogistic = stan(file = "fitLogistic.stan", 
                              model_name = "partial_pooled_logistic", data = stan_data, 
-                             iter = 2000, chains = 8, control = list(adapt_delta = 0.99))
-saveRDS(partialPooledLogistic, "./Rdatas/fit_logistics.rds")
-partialPooledLogistic = readRDS("./Rdatas/fit_logistics_short.rds")
+                             iter = 100, chains = 1, control = list(adapt_delta = 0.99))
+#saveRDS(partialPooledLogistic, "./Rdatas/fit_logistics.rds")
+#partialPooledLogistic = readRDS("./Rdatas/fit_logistics_short.rds")
 
 fake_data_matrix  <- partialPooledLogistic %>% 
   as.data.frame %>% 
   dplyr::select(dplyr::contains("y_sim"))
 narrow_weight_sim = narrow_weight
 narrow_weight_sim$value = t(fake_data_matrix[2,])
-
-plot(partialPooledLogistic, pars = c("mu_i"))
-plot(partialPooledLogistic, pars = c("A"))
-plot(partialPooledLogistic, pars = c("mu"))
-plot(partialPooledLogistic, pars = c("lambda_0", "lambda_sex"))
-plot(partialPooledLogistic, pars = c("A_0", "A_sex"))
-plot(partialPooledLogistic, pars = c("mu_0", "mu_sex"))
 
 coefsLogistic = summary(partialPooledLogistic, pars = c("A_0", "A_sex", "mu_0", "mu_sex", "lambda_0", "lambda_sex"))$summary[,"mean"]
 all_coefsLogistic = summary(partialPooledLogistic, pars = c("A", "mu", "lambda"))$summary[,"mean"]
