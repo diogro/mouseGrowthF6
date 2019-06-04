@@ -90,7 +90,7 @@ fake_data_matrix  <- partialPooledLogistic %>%
   as.data.frame %>% 
   dplyr::select(dplyr::contains("y_sim"))
 narrow_weight_sim = narrow_weight
-narrow_weight_sim$value = t(fake_data_matrix[1,])
+narrow_weight_sim$value = t(fake_data_matrix[2,])
 
 plot(partialPooledLogistic, pars = c("mu_i"))
 plot(partialPooledLogistic, pars = c("A"))
