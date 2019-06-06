@@ -10,13 +10,13 @@ functions {
 data {
     int<lower=0> N;                   // individuals
     int<lower=1> M;                   // measurements
-    int<lower=1, upper=10> n_times;   // number of time intervals
-    int<lower = 0, upper = 1> sex[N];
+    vector<lower = 0, upper = 1>[N] sex;
     int<lower = 1, upper = N> ind[M];
-    vector[M] time;                   // times
-    int time_int[M];               // which time class?
     vector[M] y;                      // weights
     int<lower = 0, upper = 1> run_estimation;
+    vector[M] time;                   // times
+    int<lower=1, upper=10> n_times;   // number of time intervals
+    int time_int[M];               // which time class?
 }
 
 parameters {
@@ -24,40 +24,37 @@ parameters {
 
   real<lower = 0> A_0;
   real A_sex;
-  real A_tilde[N];
+  vector[N] A_tilde;
   real<lower=0> sigma_A;
     
   real<lower = 0> mu_0;
   real mu_sex;
-  real mu_tilde[N];
+  vector[N] mu_tilde;
   real<lower=0> sigma_mu;
   
   real lambda_0;
   real lambda_sex;
-  real lambda_tilde[N];
+  vector[N] lambda_tilde;
   real<lower=0> sigma_lambda;
 }
 
 transformed parameters{
-  vector<lower = 0>[N] A;
-  vector<lower = 0>[N] mu;
+  vector<lower=0>[N] A;
+  vector<lower=0>[N] mu;
   vector[N] lambda;
   
-  real A_i[N];
-  real mu_i[N];
-  real lambda_i[N];
+  vector[N] A_i;
+  vector[N] mu_i;
+  vector[N] lambda_i;
   
-  for(n in 1:N){
-    
-    A_i[n] = A_tilde[n] * sigma_A;
-    mu_i[n] = mu_tilde[n] * sigma_mu;
-    lambda_i[n] = lambda_tilde[n] * sigma_lambda;
-    
-    A[n]      = 10 * (A_0 + sex[n] *      A_sex +      A_i[n]);
-    mu[n]     =      mu_0 + sex[n] *     mu_sex +     mu_i[n];
-    lambda[n] =  lambda_0 + sex[n] * lambda_sex + lambda_i[n];
+  A_i = A_tilde * sigma_A;
+  mu_i = mu_tilde * sigma_mu;
+  lambda_i = lambda_tilde * sigma_lambda;
+  
+  A      = 10 * (A_0 + sex *      A_sex +      A_i);
+  mu     =      mu_0 + sex *     mu_sex +     mu_i;
+  lambda =  lambda_0 + sex * lambda_sex + lambda_i;
   }
-}
 
 model {
 

@@ -1,8 +1,10 @@
 if(!require(rstan)){install.packages("rstan"); library(rstan)}
 if(!require(shinystan)){install.packages("shinystan"); library(shinystan)}
+if(!require(grofit)){install.packages("grofit_1.1.1-1.tar.gz", repos = NULL, type="source")
+; library(grofit)}
 
 rstan_options(auto_write = TRUE)
-options(mc.cores = 1)
+options(mc.cores = 2)
 
 source("./read_F6_phenotypes.R")
 
@@ -24,7 +26,7 @@ stan_data = list(N = N,
 # stan_rdump(names(stan_data), file = "logistc_fit_data.R")
 partialPooledLogistiVarSigma = stan(file = "fitLogisticVariableSigma.stan", 
                              model_name = "partial_pooled_logistic", data = stan_data, 
-                             iter = 100, chains = 1, control = list(adapt_delta = 0.99))
+                             iter = 2000, chains = 1, control = list(adapt_delta = 0.99))
 saveRDS(partialPooledLogistiVarSigma, "./Rdatas/fit_logisticsVarSigma.rds")
 partialPooledLogistiVarSigma = readRDS("./Rdatas/fit_logisticsVarSigma.rds")
 

@@ -1,11 +1,11 @@
 if(!require(rstan)){install.packages("rstan"); library(rstan)}
-if(!require(grofit)){install.install.packages("grofit_1.1.tar.gz", repos = NULL, type="source")
+if(!require(grofit)){install.packages("grofit_1.1.1-1.tar.gz", repos = NULL, type="source")
 ; library(grofit)}
 if(!require(shinystan)){install.packages("shinystan"); library(shinystan)}
 if(!require(cowplot)){install.packages("cowplot"); library(cowplot)}
 
 rstan_options(auto_write = TRUE)
-options(mc.cores = 8)
+options(mc.cores = 2)
 
 source("./read_F6_phenotypes.R")
 
