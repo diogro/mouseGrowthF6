@@ -52,7 +52,7 @@ transformed parameters{
   A      = 10 * (A_0 + sex *      A_sex +      A_i);
   mu     =      mu_0 + sex *     mu_sex +     mu_i;
   lambda =  lambda_0 + sex * lambda_sex + lambda_i;
-  }
+}
 
 model {
   vector[M] x;
@@ -65,12 +65,12 @@ model {
   }
   
   mu_0 ~ normal(0.0, 1.0);
-  A_0 ~ normal(2.5, 1.0);
-  lambda_0 ~ normal(0.0, 5.0);
+  A_0 ~ normal(0, 2.0);
+  lambda_0 ~ normal(0.0, 2.0);
   
-  A_sex ~ normal(0.0, 1.0);
-  mu_sex ~ normal(0.0, 1.0);
-  lambda_sex ~ normal(0.0, 1.0);
+  A_sex ~ normal(0.0, .5);
+  mu_sex ~ normal(0.0, .5);
+  lambda_sex ~ normal(0.0, .5);
   
   sigma ~ normal(0, 1);
   

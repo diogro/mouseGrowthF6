@@ -17,6 +17,11 @@ data {
     vector[M] time;                   // times
     int<lower=1, upper=10> n_times;   // number of time intervals
     int time_int[M];               // which time class?
+    cov_matrix[N]   R; // known covariance matrix
+}
+transformed data{
+  matrix[N, N] LR;
+  LR = cholesky_decompose(R);
 }
 
 parameters {
@@ -47,9 +52,9 @@ transformed parameters{
   vector[N] mu_i;
   vector[N] lambda_i;
   
-  A_i = A_tilde * sigma_A;
-  mu_i = mu_tilde * sigma_mu;
-  lambda_i = lambda_tilde * sigma_lambda;
+  A_i =      sqrt(sigma_A) * (LR * A_tilde);
+  mu_i =     sqrt(sigma_mu) * (LR * mu_tilde);
+  lambda_i = sqrt(sigma_lambda) * (LR * lambda_tilde);
   
   A      = 10 * (A_0 + sex *      A_sex +      A_i);
   mu     =      mu_0 + sex *     mu_sex +     mu_i;
