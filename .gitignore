@@ -26,3 +26,4 @@ vignettes/*.pdf
 data
 .Rproj.user
 *.rds
+Rdatas/

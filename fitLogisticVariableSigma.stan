@@ -70,8 +70,8 @@ model {
   }
   
   mu_0 ~ normal(0.0, 1.0);
-  A_0 ~ normal(2.5, 1.0);
-  lambda_0 ~ normal(0.0, 5.0);
+  A_0 ~ normal(0, 2.0);
+  lambda_0 ~ normal(0.0, 2.0);
   
   A_sex ~ normal(0.0, 0.5);
   mu_sex ~ normal(0.0, 0.5);
