@@ -32,10 +32,12 @@ for(i in 1:nrow(weightF6)){
 saveRDS(grow_models, file = "Rdatas/no_pooling_nls_growth_fit.RDS")
 mu_non_pooled = sapply(grow_models, function(x) x$parameters$mu[1])
 hist(mu_non_pooled, breaks = 100)
-mu_data = data.frame(ID = weightF6$ID, Sex = weightF6$Sex, mu = mu_non_pooled)
-ggplot(mu_data, aes(mu, group = Sex)) + geom_histogram(bins = 100) + facet_wrap(~Sex, ncol = 1)
+mu_nls = data.frame(ID = weightF6$ID, Sex = weightF6$Sex, mu = mu_non_pooled)
+ggplot(mu_nls, aes(mu, group = Sex)) + geom_histogram(bins = 100) + facet_wrap(~Sex, ncol = 1)
+mu_nls$mu_res[!is.na(mu_nls$mu)] = residuals(lm(mu~Sex, data = mu_nls))
+ggplot(mu_nls, aes(mu_res, group = Sex)) + geom_histogram(bins = 100) + facet_wrap(~Sex, ncol = 1)
 
-x =  mu_data %>% arrange(desc(mu))
+x =  mu_nls %>% arrange(desc(mu_res))
 x[1,]
 
 
@@ -51,9 +53,8 @@ stan_data_pooled = list(M = nrow(narrow_weight),
                         y = narrow_weight$value,
                         sex = as.numeric(factor(narrow_weight$Sex, levels = c("F", "M"))) - 1,
                         time = narrow_weight$times)
-
   fitLogisticPooled = stan(file = "fitLogisticPooled.stan", data = stan_data_pooled, 
-                         chains = 4, iter = 1000, control = list(adapt_delta = 0.99))
+                         chains = 4, iter = 2000, control = list(adapt_delta = 0.999))
 
 coefsLogistic = summary(fitLogisticPooled, pars = c("A", "A_s", "mu", "mu_s", "lambda", "lambda_s"))$summary[,"mean"]
 all_coefsLogistic = summary(fitLogisticPooled, pars = c("A", "mu", "lambda"))$summary[,"mean"]
@@ -84,7 +85,8 @@ stan_data_partial_pooled = list(N = N,
                                 run_estimation = 1)
 partialPooledLogistic = stan(file = "fitLogistic.stan", 
                              model_name = "partial_pooled_logistic", data = stan_data_partial_pooled, 
-                             iter = 100, chains = 1, control = list(adapt_delta = 0.99))
+                             iter = 2000, chains = 4, control = list(adapt_delta = 0.999))
+saveRDS(partialPooledLogistic, "./Rdatas/fit_logistics.rds")
 partialPooledLogistic = readRDS("./Rdatas/fit_logistics.rds")
 
 fake_data_matrix  <- partialPooledLogistic %>% 
@@ -144,11 +146,11 @@ stan_data = list(N = N,
                  y = narrow_weight$value, 
                  run_estimation = 1)
 
-partialPooledLogistiVarSigma = stan(file = "fitLogisticVariableSigma.stan", 
-                                    model_name = "partial_pooled_logistic", data = stan_data, 
-                                    iter = 2000, chains = 8, control = list(adapt_delta = 0.999))
-saveRDS(partialPooledLogistiVarSigma, "./Rdatas/fit_logisticsVarSigma.rds")
-#partialPooledLogistiVarSigma = readRDS("./Rdatas/fit_logisticsVarSigma.rds")
+#partialPooledLogistiVarSigma = stan(file = "fitLogisticVariableSigma.stan", 
+                                    #model_name = "partial_pooled_logistic", data = stan_data, 
+                                    #iter = 2000, chains = 4, control = list(adapt_delta = 0.999))
+#saveRDS(partialPooledLogistiVarSigma, "./Rdatas/fit_logisticsVarSigma.rds")
+partialPooledLogistiVarSigma = readRDS("./Rdatas/fit_logisticsVarSigma.rds")
 
 fake_data_matrix  <- partialPooledLogistiVarSigma %>% 
   as.data.frame %>% 
@@ -192,4 +194,8 @@ curves_plot = ggplot(narrow_weight, aes(times, value, group = ID)) + geom_jitter
   labs(x = "Dias", y = "Peso (g)")
 
 mu_i = summary(partialPooledLogistiVarSigma, pars = c("mu_i"))$summary[,"mean"]
+mus = data.frame(mu_vS = mu_i, ind = 1:length(mu_i))
 hist(mu_i, breaks = 100)
+narrow_weight$ind
+
+unique(left_join(mus, narrow_weight[,c("ind", "ID")], by = "ind"))
