@@ -11,7 +11,10 @@ source("./read_F6_phenotypes.R")
 times = c(0, 3, seq(7, 56, 7))
 N = nrow(weightF6)
 
-narrow_weight = weightF6[1:N,] %>% mutate(ind = 1:N) %>% gather(trait, value, Weight_D0:Weight_D56) %>% mutate(times = as.numeric(unlist(gsub("[^0-9]", "", unlist(trait))))) %>% filter(!is.na(value))
+narrow_weight = weightF6[1:N,] %>%
+    mutate(ind = 1:N) %>% gather(trait, value, Weight_D0:Weight_D56) %>%
+    mutate(times = as.numeric(unlist(gsub("[^0-9]", "", unlist(trait))))) %>%
+    filter(!is.na(value))
 
 stan_data = list(N = N,
                  M = nrow(narrow_weight),
@@ -22,12 +25,11 @@ stan_data = list(N = N,
                  time_int = as.numeric(factor(narrow_weight$times, levels = times)),
                  y = narrow_weight$value, 
                  run_estimation = 1)
-# attach(stan_data)
-# stan_rdump(names(stan_data), file = "logistc_fit_data.R")
-partialPooledLogistiVarSigma = stan(file = "fitLogisticVariableSigma.stan", 
-                             model_name = "partial_pooled_logistic", data = stan_data, 
-                             iter = 2000, chains = 1, control = list(adapt_delta = 0.99))
-saveRDS(partialPooledLogistiVarSigma, "./Rdatas/fit_logisticsVarSigma.rds")
+
+#partialPooledLogistiVarSigma = stan(file = "fitLogisticVariableSigma.stan", 
+                             #model_name = "partial_pooled_logistic_variable_sigma", data = stan_data, 
+                             #iter = 2000, chains = 2, control = list(adapt_delta = 0.999))
+#saveRDS(partialPooledLogistiVarSigma, "./Rdatas/fit_logisticsVarSigma.rds")
 partialPooledLogistiVarSigma = readRDS("./Rdatas/fit_logisticsVarSigma.rds")
 
 summary(partialPooledLogistiVarSigma, pars = c("sigma"))$summary[,"mean"]
