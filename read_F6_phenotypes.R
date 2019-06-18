@@ -32,8 +32,8 @@ full_data_Strain = read_csv("./data/Mouse phenotypes.csv") %>%
                 Weight_D0:Weight_D70, Final_weight, Liver:Fat) %>%
   filter(Gen == "Strain")
 
-full_data_F6$ID[full_data_F6$ID == 3202] = "3302"
-full_data_F5F6$ID[full_data_F5F6$ID == 3202] = "3302"
+full_data_F6$ID[full_data_F6$ID == 3202] = "33020"
+full_data_F5F6$ID[full_data_F5F6$ID == 3202] = "33020"
 
 
 pedigree = as.data.frame(read.csv("./data/Intercross_pedigree.csv")) %>% 

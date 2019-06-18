@@ -8,11 +8,12 @@ growthF5F6$animal = growthF5F6$ID
 F6_ids = growthF5F6$ID[growthF5F6$Gen == "F6"]
 F5_ids = unique(c(growthF5F6$Pat_ID[growthF5F6$ID %in% F6_ids], growthF5F6$Mat_ID[growthF5F6$ID %in% F6_ids]))
 F5F6_ids = c(F6_ids, F5_ids)
-growthF5F6 = growthF5F6[growthF5F6$ID %in% F5F6_ids,]
-
-ginverse = inverseA(pedigree)
-f6 = rownames(ginverse$Ainv) %in% growthF5F6$ID
-Ainv = ginverse$Ainv[f6, f6]
+ginverse = inverseA(pedigree, F5F6_ids)
+Ainv = ginverse$Ainv
+A = solve(Ainv + 1e-3*diag(nrow(Ainv)))
+dimnames(A) = list(rownames(Ainv), rownames(Ainv))
+if(isSymmetric(A)){A = (A + t(A))/2 
+} else stop("A not symmetric")
 
 length(levels(factor(growthF5F6$ID)))
 length(rownames(Ainv))
