@@ -189,10 +189,12 @@ weightF6
 F6_ids = unique(narrow_weight$ID)
 ginverse = inverseA(pedigree, F6_ids)
 Ainv = ginverse$Ainv
-A = solve(Ainv + 1e-3*diag(nrow(Ainv)))
+#A = solve(Ainv + 1e-3*diag(nrow(Ainv)))
+A = solve(Ainv)
 dimnames(A) = list(rownames(Ainv), rownames(Ainv))
 if(isSymmetric(A)){A = (A + t(A))/2 
 } else stop("A not symmetric")
+A[1,2]
 
 stan_data_animal = list(N = N,
                  M = nrow(narrow_weight),
@@ -207,7 +209,7 @@ stan_data_animal = list(N = N,
 
 partialPooledLogistiVarSigmaAnimal = stan(file = "./fitLogisticVariableSigmaAnimal.stan", 
                                     model_name = "partial_pooled_logistic", data = stan_data_animal, 
-                                    iter = 1000, chains = 1, control = list(adapt_delta = 0.999))
+                                    iter = 2000, chains = 1, control = list(adapt_delta = 0.999))
       #saveRDS(partialPooledLogistiVarSigmaAnimal, "./Rdatas/fit_logisticsVarSigmaAnimal.rds")
 #partialPooledLogistiVarSigmaAnimal = readRDS("./Rdatas/fit_logisticsVarSigmaAnimal.rds")
 
@@ -215,7 +217,7 @@ fake_data_matrix  <- partialPooledLogistiVarSigmaAnimal %>%
   as.data.frame %>% 
   dplyr::select(dplyr::contains("y_sim"))
 narrow_weight_sim = narrow_weight
-narrow_weight_sim$value = t(fake_data_matrix[1,])
+narrow_weight_sim$value = t(fake_data_matrix[2,])
 
 coefsLogistic = summary(partialPooledLogistiVarSigmaAnimal, pars = c("A_0", "A_sex", "mu_0", "mu_sex", "lambda_0", "lambda_sex"))$summary[,"mean"]
 all_coefsLogistic = summary(partialPooledLogistiVarSigmaAnimal, pars = c("A", "mu", "lambda"))$summary[,"mean"]

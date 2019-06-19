@@ -27,12 +27,12 @@ transformed data{
 parameters {
   real<lower=0> sigma[n_times];
 
-  real<lower = 0> A_0;
+  real A_0;
   real A_sex;
   vector[N] A_tilde;
   real<lower=0> sigma_A;
     
-  real<lower = 0> mu_0;
+  real mu_0;
   real mu_sex;
   vector[N] mu_tilde;
   real<lower=0> sigma_mu;
@@ -52,9 +52,9 @@ transformed parameters{
   vector[N] mu_i;
   vector[N] lambda_i;
   
-  A_i =      sqrt(sigma_A) * (LR * A_tilde);
-  mu_i =     sqrt(sigma_mu) * (LR * mu_tilde);
-  lambda_i = sqrt(sigma_lambda) * (LR * lambda_tilde);
+  A_i =      sqrt(sigma_A) * (A_tilde);
+  mu_i =     sqrt(sigma_mu) * (mu_tilde);
+  lambda_i = sqrt(sigma_lambda) * (lambda_tilde);
   
   A      = 10 * (A_0 + sex *      A_sex +      A_i);
   mu     =      mu_0 + sex *     mu_sex +     mu_i;
