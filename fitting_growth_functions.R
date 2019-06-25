@@ -1,8 +1,9 @@
-if(!require(rstan)){install.packages("rstan"); library(rstan)}
+if(!require(rstan)){install.packages("rstan", dependencies = TRUE); library(rstan)}
 if(!require(grofit)){install.install.packages("grofit_1.1.tar.gz", repos = NULL, type="source")
   ; library(grofit)}
 if(!require(shinystan)){install.packages("shinystan"); library(shinystan)}
 if(!require(cowplot)){install.packages("cowplot"); library(cowplot)}
+theme_set(theme_cowplot())
 
 rstan_options(auto_write = TRUE)
 options(mc.cores = 8)
@@ -37,15 +38,9 @@ ggplot(mu_nls, aes(mu, group = Sex)) + geom_histogram(bins = 100) + facet_wrap(~
 mu_nls$mu_res[!is.na(mu_nls$mu)] = residuals(lm(mu~Sex, data = mu_nls))
 ggplot(mu_nls, aes(mu_res, group = Sex)) + geom_histogram(bins = 100) + facet_wrap(~Sex, ncol = 1)
 
-x =  mu_nls %>% arrange(desc(mu_res))
-x[1,]
-
-
 weight_plot = ggplot(narrow_weight, aes(times, value, group = ID)) + geom_jitter(alpha = 0.3, size = 0.6) + facet_wrap(~Sex) +
   geom_text(data = filter(narrow_weight, ID == 4167), aes(label = ID), color = "red") + 
   labs(x = "Dias", y = "Peso (g)")
-
-
 
 ##### Logistic complete pooling
 
@@ -210,7 +205,7 @@ stan_data_animal = list(N = N,
 partialPooledLogistiVarSigmaAnimal = stan(file = "./fitLogisticVariableSigmaAnimal.stan", 
                                     model_name = "partial_pooled_logistic", data = stan_data_animal, 
                                     iter = 2000, chains = 1, control = list(adapt_delta = 0.999))
-      #saveRDS(partialPooledLogistiVarSigmaAnimal, "./Rdatas/fit_logisticsVarSigmaAnimal.rds")
+#saveRDS(partialPooledLogistiVarSigmaAnimal, "./Rdatas/fit_logisticsVarSigmaAnimal.rds")
 #partialPooledLogistiVarSigmaAnimal = readRDS("./Rdatas/fit_logisticsVarSigmaAnimal.rds")
 
 fake_data_matrix  <- partialPooledLogistiVarSigmaAnimal %>% 
