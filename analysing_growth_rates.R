@@ -114,3 +114,4 @@ mu_df = left_join(pPLVS_mu_df, ddply(pPLVS_mu_df, .(ID), classifyMu)) %>%
   filter(measured)
 ggplot(mu_df, aes(V1, mean, color = V1, group = V1)) + geom_violin() + geom_jitter(width = 0.1, height = 0) 
 table(mu_df$V1)
+write_csv(mu_df, "/home/MouseScans/Mouse_phenotypes/F6_growth_rates.csv")

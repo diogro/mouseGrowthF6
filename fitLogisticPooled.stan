@@ -33,13 +33,13 @@ model {
   }
   y ~ normal(x, sigma);
   
-  mu ~ normal(0, 1);
-  A ~ normal(0, 2);
+  mu ~ normal(0, 0.1);
+  A ~ normal(0, 1);
   lambda ~ normal(0, 2);
 
-  mu_s ~ normal(0, 0.5);
-  A_s ~ normal(0, 0.5);
-  lambda_s ~ normal(0, 0.5);
+  mu_s ~ normal(0, 0.1);
+  A_s ~ normal(0, 3);
+  lambda_s ~ normal(0, 2);
   
   sigma ~ normal(0, 1);
 }
