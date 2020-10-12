@@ -27,12 +27,12 @@ transformed data{
 parameters {
   real<lower=0> sigma[n_times];
 
-  real A_0;
+  real<lower = 0> A_0;
   real A_sex;
   vector[N] A_tilde;
   real<lower=0> sigma_A;
     
-  real mu_0;
+  real<lower = 0> mu_0;
   real mu_sex;
   vector[N] mu_tilde;
   real<lower=0> sigma_mu;
@@ -41,6 +41,8 @@ parameters {
   real lambda_sex;
   vector[N] lambda_tilde;
   real<lower=0> sigma_lambda;
+  
+  real nu;
 }
 
 transformed parameters{
@@ -52,9 +54,9 @@ transformed parameters{
   vector[N] mu_i;
   vector[N] lambda_i;
   
-  A_i =      sqrt(sigma_A) * (A_tilde);
-  mu_i =     sqrt(sigma_mu) * (mu_tilde);
-  lambda_i = sqrt(sigma_lambda) * (lambda_tilde);
+  A_i =  sqrt(sigma_A) * (A_tilde);
+  mu_i = sqrt(sigma_mu) * (LR * mu_tilde);
+  lambda_i =  sqrt(sigma_lambda) * (lambda_tilde);
   
   A      = 10 * (A_0 + sex *      A_sex +      A_i);
   mu     =      mu_0 + sex *     mu_sex +     mu_i;
@@ -71,21 +73,23 @@ model {
       x_sigma[i] = sigma[time_int[i]];
   }
   if(run_estimation==1){
-    y ~ normal(x, x_sigma);
+    y ~ student_t(nu, x, x_sigma);
   }
   
-  mu_0 ~ normal(0.0, 1.0);
+  nu ~ gamma(2, 0.1);
+  
+  mu_0 ~ normal(0.0, 0.5);
   A_0 ~ normal(0, 2.0);
   lambda_0 ~ normal(0.0, 2.0);
   
-  A_sex ~ normal(0.0, .5);
-  mu_sex ~ normal(0.0, .5);
-  lambda_sex ~ normal(0.0, .5);
+  A_sex ~ normal(0.0, 1);
+  mu_sex ~ normal(0.0, 0.1);
+  lambda_sex ~ normal(0.0, 2.0);
   
   sigma ~ normal(0, 1);
   
-  sigma_A ~ normal(0, 1);
-  sigma_mu ~ normal(0, 0.1);
+  sigma_A ~ normal(0, 0.5);
+  sigma_mu ~ normal(0, 0.05);
   sigma_lambda ~ normal(0, 1);
 
   A_tilde ~ normal(0, 1);
