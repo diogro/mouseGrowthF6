@@ -64,18 +64,18 @@ model {
     y ~ normal(x, sigma);
   }
   
-  mu_0 ~ normal(0.0, 1.0);
-  A_0 ~ normal(0, 2.0);
-  lambda_0 ~ normal(0.0, 2.0);
+  mu_0 ~ normal(0.0, 0.5);
+  A_0 ~ normal(0, 1);
+  lambda_0 ~ normal(0.0, 2);
   
-  A_sex ~ normal(0.0, .5);
-  mu_sex ~ normal(0.0, .5);
-  lambda_sex ~ normal(0.0, .5);
+  A_sex ~ normal(0.0, 3);
+  mu_sex ~ normal(0.0, 0.1);
+  lambda_sex ~ normal(0.0, 2);
   
   sigma ~ normal(0, 1);
   
-  sigma_A ~ normal(0, 1);
-  sigma_mu ~ normal(0, 1);
+  sigma_A ~ normal(0, 0.5);
+  sigma_mu ~ normal(0, 0.1);
   sigma_lambda ~ normal(0, 1);
 
   A_tilde ~ normal(0, 1);

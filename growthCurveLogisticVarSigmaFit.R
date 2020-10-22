@@ -4,7 +4,7 @@ if(!require(grofit)){install.packages("grofit_1.1.1-1.tar.gz", repos = NULL, typ
 ; library(grofit)}
 
 rstan_options(auto_write = TRUE)
-options(mc.cores = 2)
+options(mc.cores = 4)
 
 source("./read_F6_phenotypes.R")
 
@@ -25,14 +25,16 @@ stan_data = list(N = N,
                  time_int = as.numeric(factor(narrow_weight$times, levels = times)),
                  y = narrow_weight$value, 
                  run_estimation = 1)
-
-#partialPooledLogistiVarSigma = stan(file = "fitLogisticVariableSigma.stan", 
-                             #model_name = "partial_pooled_logistic_variable_sigma", data = stan_data, 
-                             #iter = 2000, chains = 2, control = list(adapt_delta = 0.999))
+with(stan_data, stan_rdump(names(stan_data), file = "fit_growth_data.Rstan"))
+# partialPooledLogistiVarSigma = stan(file = "fitLogisticVariableSigma.stan", 
+#                              model_name = "partial_pooled_logistic_variable_sigma", data = stan_data, 
+#                              iter = 2000, chains = 4, control = list(adapt_delta = 0.99))
+#csvfiles <- dir(pattern = 'LogisticVariableSigma_samples[1-4].csv', full.names = TRUE)
+#partialPooledLogistiVarSigma = read_stan_csv(csvfiles)
 #saveRDS(partialPooledLogistiVarSigma, "./Rdatas/fit_logisticsVarSigma.rds")
 partialPooledLogistiVarSigma = readRDS("./Rdatas/fit_logisticsVarSigma.rds")
 
-summary(partialPooledLogistiVarSigma, pars = c("sigma"))$summary[,"mean"]
+summary(partialPooledLogistiVarSigma, pars = c("sigma"))[[1]] 
 
 fake_data_matrix  <- partialPooledLogistiVarSigma %>% 
   as.data.frame %>% 
@@ -71,6 +73,10 @@ sim_data_plot = ggplot(narrow_weight, aes(times, value, group = ID)) +
   labs(x = "Dias", y = "Peso (g)")
 
 curves_plot = ggplot(narrow_weight, aes(times, value, group = ID)) + geom_jitter(alpha = 0.3, size = 0.6) + facet_wrap(~Sex) +
-  geom_line(aes(y = curve), data = logistic_ID_curve, colour = "gray", alpha = 0.15) + 
+  geom_line(aes(y = curve), data = logistic_ID_curve, colour = "gray", alpha = 0.2) + 
   geom_line(aes(y = curve, group = 1), data = logistic_mean_curve, colour = "red") + 
   labs(x = "Dias", y = "Peso (g)")
+
+
+mu_i = summary(partialPooledLogistiVarSigma, pars = c("mu_i"))$summary[,"mean"]
+hist(mu_i, breaks = 100)

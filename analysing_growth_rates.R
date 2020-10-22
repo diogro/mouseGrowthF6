@@ -146,3 +146,4 @@ save_plot("/home/MouseScans/figures/taxas_mu.png", mus_plot, base_height = 6)
   
   save_plot("/home/MouseScans/figures/growth_curves_class.png", curves_plot_classified, base_height = 6)
   
+write_csv(mu_df, "/home/MouseScans/Mouse_phenotypes/F6_growth_rates.csv")

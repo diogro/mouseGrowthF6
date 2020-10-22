@@ -6,7 +6,7 @@ if(!require(cowplot)){install.packages("cowplot"); library(cowplot)}
 theme_set(theme_cowplot())
 
 rstan_options(auto_write = TRUE)
-options(mc.cores = 8)
+options(mc.cores = 4)
 
 source("./read_F6_phenotypes.R")
 
@@ -34,11 +34,21 @@ for(i in 1:nrow(weightF6)){
 }
 saveRDS(grow_models, file = "Rdatas/no_pooling_nls_growth_fit.RDS")
 mu_non_pooled = sapply(grow_models, function(x) x$parameters$mu[1])
+A_non_pooled = sapply(grow_models, function(x) x$parameters$A[1])
+lambda_non_pooled = sapply(grow_models, function(x) x$parameters$lambda[1])
+
 hist(mu_non_pooled, breaks = 100)
-mu_nls = data.frame(ID = weightF6$ID, Sex = weightF6$Sex, mu = mu_non_pooled)
+hist(A_non_pooled, breaks = 100)
+hist(lambda_non_pooled, breaks = 100)
+mu_nls = data.frame(ID = weightF6$ID, Sex = weightF6$Sex, mu = mu_non_pooled, A = A_non_pooled, lambda = lambda_non_pooled)
 ggplot(mu_nls, aes(mu, group = Sex)) + geom_histogram(bins = 100) + facet_wrap(~Sex, ncol = 1)
 mu_nls$mu_res[!is.na(mu_nls$mu)] = residuals(lm(mu~Sex, data = mu_nls))
+mu_nls$A_res[!is.na(mu_nls$mu)] = residuals(lm(A~Sex, data = mu_nls))
+mu_nls$lambda_res[!is.na(mu_nls$mu)] = residuals(lm(lambda~Sex, data = mu_nls))
 ggplot(mu_nls, aes(mu_res, group = Sex)) + geom_histogram(bins = 100) + facet_wrap(~Sex, ncol = 1)
+
+mean(mu_nls$mu, na.rm = T)
+sd(mu_nls$mu_res, na.rm = T)
 
 weight_plot = ggplot(narrow_weight, aes(times, value, group = ID)) + geom_jitter(alpha = 0.3, size = 0.6) + facet_wrap(~Sex) +
   geom_text(data = filter(narrow_weight, ID == 4167), aes(label = ID), color = "red") + 
@@ -82,7 +92,8 @@ stan_data_partial_pooled = list(N = N,
                                 run_estimation = 1)
 partialPooledLogistic = stan(file = "fitLogistic.stan", 
                              model_name = "partial_pooled_logistic", data = stan_data_partial_pooled, 
-                             iter = 2000, chains = 4, control = list(adapt_delta = 0.999))
+                             iter = 10000, warmup = 8000, chains = 4, 
+                             control = list(adapt_delta = 0.999, max_treedepth = 11))
 saveRDS(partialPooledLogistic, "./Rdatas/fit_logistics.rds")
 partialPooledLogistic = readRDS("./Rdatas/fit_logistics.rds")
 

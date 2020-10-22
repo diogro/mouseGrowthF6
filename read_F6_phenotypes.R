@@ -35,11 +35,9 @@ full_data_Strain = read_csv("./data/Mouse phenotypes.csv") %>%
 full_data_F6$ID[full_data_F6$ID == 3202] = "33020"
 full_data_F5F6$ID[full_data_F5F6$ID == 3202] = "33020"
 
-
 pedigree = as.data.frame(read.csv("./data/Intercross_pedigree.csv")) %>% 
   rename(id = animal) %>% orderPed
 
-  
 full_data_F6 <- mutate(full_data_F6, 
                          # growth_D0D14  = Weight_D14 - Weight_D0,
                          # growth_D14D28 = Weight_D28 - Weight_D14,
