@@ -176,3 +176,19 @@ m_growth_f6$period = factor(m_growth_f6$period, levels = growth_traits)
 
 # save_plot("~/Dropbox/labbio/posters/2018 - 07 - 19 - Evolution2018/strain_growth-curves_2w.png", stain_growth,
 #           base_height = 10, base_aspect_ratio = 1)
+
+N = nrow(full_data_Strain)
+narrow_weight = full_data_Strain[1:N,] %>% 
+  mutate(ind = 1:N) %>% 
+  gather(trait, value, Weight_D0:Weight_D56) %>% 
+  mutate(times = as.numeric(unlist(gsub("[^0-9]", "", unlist(trait))))) %>% 
+  filter(!is.na(value)) %>%
+  filter(!is.na(Sex))
+
+weight_plot_strains = ggplot(narrow_weight, aes(times, value, group = interaction(Strain, times), fill = Strain, color = Strain)) + 
+  #geom_jitter(alpha = 0.7, size = 1) + 
+  geom_boxplot(outlier.shape = NA) + 
+  facet_wrap(~Sex) +
+  geom_text(data = filter(narrow_weight, ID == 4167), aes(label = ID), color = "red") + 
+  labs(x = "Dias", y = "Peso (g)")
+save_plot("/home/MouseScans/figures/growth_distribution_strains.png", weight_plot_strains, base_height = 6)

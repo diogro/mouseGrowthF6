@@ -1,5 +1,5 @@
 if(!require(rstan)){install.packages("rstan", dependencies = TRUE); library(rstan)}
-if(!require(grofit)){install.install.packages("grofit_1.1.tar.gz", repos = NULL, type="source")
+if(!require(grofit)){install.packages("grofit_1.1.tar.gz", repos = NULL, type="source")
   ; library(grofit)}
 if(!require(shinystan)){install.packages("shinystan"); library(shinystan)}
 if(!require(cowplot)){install.packages("cowplot"); library(cowplot)}
@@ -24,7 +24,9 @@ narrow_weight = weightF6[1:N,] %>%
 
 TestRun = gcFitModel(times, weightF6[10,weight_traits])
 summary(TestRun$nls)
-plot(TestRun)
+png("/home/MouseScans/figures/single_gc.png", width = 1080)
+plot(TestRun, pch = 19)
+dev.off()
 
 grow_models = vector("list", nrow(weightF6))
 for(i in 1:nrow(weightF6)){
@@ -42,32 +44,32 @@ weight_plot = ggplot(narrow_weight, aes(times, value, group = ID)) + geom_jitter
   geom_text(data = filter(narrow_weight, ID == 4167), aes(label = ID), color = "red") + 
   labs(x = "Dias", y = "Peso (g)")
 
-##### Logistic complete pooling
-
-stan_data_pooled = list(M = nrow(narrow_weight),
-                        y = narrow_weight$value,
-                        sex = as.numeric(factor(narrow_weight$Sex, levels = c("F", "M"))) - 1,
-                        time = narrow_weight$times)
-  fitLogisticPooled = stan(file = "fitLogisticPooled.stan", data = stan_data_pooled, 
-                         chains = 4, iter = 2000, control = list(adapt_delta = 0.999))
-
-coefsLogistic = summary(fitLogisticPooled, pars = c("A", "A_s", "mu", "mu_s", "lambda", "lambda_s"))$summary[,"mean"]
-all_coefsLogistic = summary(fitLogisticPooled, pars = c("A", "mu", "lambda"))$summary[,"mean"]
-
-grid <- with(narrow_weight, seq(min(times), max(times), length = 100))
-logistic_mean_curve <- ddply(narrow_weight, "Sex", function(df) {
-  data.frame( 
-    times = grid,
-    curve = logistic(grid, A = 10 * (coefsLogistic["A"] + ifelse(df$Sex[1] == "M", coefsLogistic["A_s"], 0)), 
-                     mu = coefsLogistic["mu"] + ifelse(df$Sex[1] == "M", coefsLogistic["mu_s"], 0), 
-                     lambda = coefsLogistic["lambda"] + ifelse(df$Sex[1] == "M", coefsLogistic["lambda_s"], 0))
-  )
-}
-)
-
-curves_plot = ggplot(narrow_weight, aes(times, value, group = ID)) + geom_jitter(alpha = 0.3, size = 0.6) + facet_wrap(~Sex) +
-  geom_line(aes(y = curve, group = 1), data = logistic_mean_curve, colour = "red") + 
-  labs(x = "Dias", y = "Peso (g)")
+# ##### Logistic complete pooling
+# 
+# stan_data_pooled = list(M = nrow(narrow_weight),
+#                         y = narrow_weight$value,
+#                         sex = as.numeric(factor(narrow_weight$Sex, levels = c("F", "M"))) - 1,
+#                         time = narrow_weight$times)
+#   fitLogisticPooled = stan(file = "fitLogisticPooled.stan", data = stan_data_pooled, 
+#                          chains = 4, iter = 2000, control = list(adapt_delta = 0.999))
+# 
+# coefsLogistic = summary(fitLogisticPooled, pars = c("A", "A_s", "mu", "mu_s", "lambda", "lambda_s"))$summary[,"mean"]
+# all_coefsLogistic = summary(fitLogisticPooled, pars = c("A", "mu", "lambda"))$summary[,"mean"]
+# 
+# grid <- with(narrow_weight, seq(min(times), max(times), length = 100))
+# logistic_mean_curve <- ddply(narrow_weight, "Sex", function(df) {
+#   data.frame( 
+#     times = grid,
+#     curve = logistic(grid, A = 10 * (coefsLogistic["A"] + ifelse(df$Sex[1] == "M", coefsLogistic["A_s"], 0)), 
+#                      mu = coefsLogistic["mu"] + ifelse(df$Sex[1] == "M", coefsLogistic["mu_s"], 0), 
+#                      lambda = coefsLogistic["lambda"] + ifelse(df$Sex[1] == "M", coefsLogistic["lambda_s"], 0))
+#   )
+# }
+# )
+# 
+# curves_plot = ggplot(narrow_weight, aes(times, value, group = ID)) + geom_jitter(alpha = 0.3, size = 0.6) + facet_wrap(~Sex) +
+#   geom_line(aes(y = curve, group = 1), data = logistic_mean_curve, colour = "red") + 
+#   labs(x = "Dias", y = "Peso (g)")
 
 ##### Logistic partial pooling
 
@@ -176,6 +178,17 @@ logistic_ID_curve <- ddply(narrow_weight, .(Sex, ID), function(df) {
   )
 }
 )
+
+curves_plot = ggplot(narrow_weight, aes(times, value, group = ID)) + geom_jitter(alpha = 0.3, size = 0.6) + facet_wrap(~Sex) +
+  geom_line(aes(y = curve), data = logistic_ID_curve, colour = "gray", alpha = 0.15) + 
+  geom_line(aes(y = curve, group = 1), data = logistic_mean_curve, colour = "red") + 
+  labs(x = "Dias", y = "Peso (g)")
+
+sim_data_plot = ggplot(narrow_weight, aes(times, value, group = ID)) + 
+  geom_jitter(alpha = 0.3, size = 0.6) + 
+  geom_jitter(data = narrow_weight_sim, alpha = 0.3, size = 0.6, color = "red") + 
+  facet_wrap(~Sex) +
+  labs(x = "Dias", y = "Peso (g)")
 
 #### Logistic partial pooled varying sigmas animal model
 

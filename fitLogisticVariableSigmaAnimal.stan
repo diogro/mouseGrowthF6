@@ -85,7 +85,7 @@ model {
   sigma ~ normal(0, 1);
   
   sigma_A ~ normal(0, 1);
-  sigma_mu ~ normal(0, 0.1);
+  sigma_mu ~ normal(0, 1);
   sigma_lambda ~ normal(0, 1);
 
   A_tilde ~ normal(0, 1);
