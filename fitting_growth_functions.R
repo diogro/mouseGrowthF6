@@ -1,6 +1,7 @@
 if(!require(rstan)){install.packages("rstan", dependencies = TRUE); library(rstan)}
 if(!require(cmdstanr)){install.packages("cmdstanr"); library(cmdstanr)}
 if(!require(grofit)){install.packages("./grofit_1.1.1-1.tar.gz", repos = NULL, type="source")
+
   ; library(grofit)}
 if(!require(shinystan)){install.packages("shinystan"); library(shinystan)}
 if(!require(cowplot)){install.packages("cowplot"); library(cowplot)}
@@ -28,7 +29,9 @@ mice_weight$traits
 
 TestRun = gcFitModel(times, mice_weight$F6[10, mice_weight$traits])
 summary(TestRun$nls)
-plot(TestRun)
+png("/home/MouseScans/figures/single_gc.png", width = 1080)
+plot(TestRun, pch = 19)
+dev.off()
 
 grow_models = vector("list", nrow(mice_weight$F6))
 for(i in 1:nrow(mice_weight$F6)){
@@ -90,6 +93,7 @@ logistic_mean_curve <- ddply(narrow_weight, "Sex", function(df) {
 curves_plot = ggplot(narrow_weight, aes(times, value, group = ID)) + geom_jitter(alpha = 0.3, size = 0.6) + facet_wrap(~Sex) +
   geom_line(aes(y = curve, group = 1), data = logistic_mean_curve, colour = "red") + 
   labs(x = "Dias", y = "Peso (g)")
+
 
 ##### Logistic partial pooling
 
@@ -221,10 +225,6 @@ sim_data_plot = ggplot(narrow_weight, aes(times, value, group = ID)) +
   geom_jitter(data = narrow_weight_sim, alpha = 0.3, size = 0.6, color = "red") + 
   facet_wrap(~Sex) +
   labs(x = "Dias", y = "Peso (g)")
-
-
-
-
 
 #### Logistic partial pooled varying sigmas animal model
 

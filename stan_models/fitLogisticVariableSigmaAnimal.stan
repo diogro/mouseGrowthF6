@@ -90,6 +90,7 @@ model {
   
   sigma_A ~ normal(0, 0.5);
   sigma_mu ~ normal(0, 0.05);
+
   sigma_lambda ~ normal(0, 1);
 
   A_tilde ~ normal(0, 1);
