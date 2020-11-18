@@ -25,6 +25,8 @@ summary(stan_animal_model, pars = "corrG")
 colMeans(stan_animal_model@G)
 growth_animal = rstan::extract(stan_animal_model)
 colMeans(growth_animal$G)
+colMeans(growth_animal$L_sigma)
+
 corrplot.mixed(colMeans(growth_animal$corrG), upper = "ellipse")
 
 
