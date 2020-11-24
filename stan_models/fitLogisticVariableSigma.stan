@@ -37,7 +37,6 @@ parameters {
   vector[N] lambda_tilde;
   real<lower=0> sigma_lambda;
   
-  real nu;
 }
 
 transformed parameters{
@@ -68,22 +67,20 @@ model {
       x_sigma[i] = sigma[time_int[i]];
   }
   if(run_estimation==1){
-    y ~ student_t(nu, x, x_sigma);
+    y ~ normal(x, x_sigma);
   }
   
-  nu ~ gamma(2, 0.1);
-  
-  mu_0 ~ normal(0.0, 0.5);
-  A_0 ~ normal(0, 2.0);
-  lambda_0 ~ normal(0.0, 2.0);
+  mu_0 ~ normal(0.0, 1);
+  A_0 ~ normal(0, 1.0);
+  lambda_0 ~ normal(0.0, 1.0);
   
   A_sex ~ normal(0.0, 1);
   mu_sex ~ normal(0.0, 0.1);
-  lambda_sex ~ normal(0.0, 2.0);
+  lambda_sex ~ normal(0.0, 1.0);
   
   sigma ~ normal(0, 1);
   
-  sigma_A ~ normal(0, 0.5);
+  sigma_A ~ normal(0, 0.3);
   sigma_mu ~ normal(0, 0.05);
   sigma_lambda ~ normal(0, 1);
 

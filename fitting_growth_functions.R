@@ -52,7 +52,7 @@ mean(mu_nls$mu, na.rm = T)
 sd(mu_nls$mu_res, na.rm = T)
 
 weight_plot = ggplot(narrow_weight, aes(times, value, group = ID)) + geom_jitter(alpha = 0.3, size = 0.6) + facet_wrap(~Sex) +
-  geom_text(data = filter(narrow_weight, ID == 4167), aes(label = ID), color = "red") + 
+  #geom_text(data = filter(narrow_weight, ID == 4167), aes(label = ID), color = "red") + 
   labs(x = "Dias", y = "Peso (g)")
 
 ##### Logistic complete pooling
@@ -107,7 +107,7 @@ fitLogistic = Logistic_model$sample(data = stan_data_partial_pooled,
                                     iter_warmup = 1000, 
                                     iter_sampling = 1000, 
                                     adapt_delta = 0.999, 
-                                    max_treedepth = 11)
+                                    max_treedepth = 12)
 partialPooledLogistic = rstan::read_stan_csv(fitLogistic$output_files())
 
 saveRDS(partialPooledLogistic, "./Rdatas/fit_logistics.rds")
@@ -173,10 +173,10 @@ LogisticVariableSigma = cmdstan_model(stan_file = "stan_models/fitLogisticVariab
 fitLogisticVariableSigma = LogisticVariableSigma$sample(data = stan_data, 
                                                         chains = 4, 
                                                         parallel_chains = 4,
-                                                        iter_warmup = 4000, 
+                                                        iter_warmup = 1000, 
                                                         iter_sampling = 1000, 
                                                         adapt_delta = 0.999, 
-                                                        max_treedepth = 11)
+                                                        max_treedepth = 10)
 partialPooledLogistiVarSigma = rstan::read_stan_csv(fitLogisticVariableSigma$output_files())
 saveRDS(partialPooledLogistiVarSigma, "./Rdatas/fit_logisticsVarSigma.rds")
 partialPooledLogistiVarSigma = readRDS("./Rdatas/fit_logisticsVarSigma.rds")
