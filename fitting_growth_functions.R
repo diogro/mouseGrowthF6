@@ -6,7 +6,7 @@ if(!require(cowplot)){install.packages("cowplot"); library(cowplot)}
 theme_set(theme_cowplot())
 
 rstan_options(auto_write = TRUE)
-options(mc.cores = 4)
+options(mc.cores = 8)
 
 source("./read_F6_phenotypes.R")
 

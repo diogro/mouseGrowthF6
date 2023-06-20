@@ -6,7 +6,6 @@ if(!require(tidyr)){install.packages("tidyr"); library(tidyr)}
 if(!require(ggplot2)){install.packages("ggplot2"); library(ggplot2)}
 if(!require(viridis)){install.packages("viridis"); library(viridis)}
 if(!require(cowplot)){install.packages("cowplot"); library(cowplot)}
-if(!require(MasterBayes)){install.packages("MasterBayes"); library(MasterBayes)}
 if(!require(MCMCglmm)){install.packages("MCMCglmm"); library(MCMCglmm)}
 if(!require(pedantics)){install.packages("pedantics"); library(pedantics)}
 if(!require(corrplot)){install.packages("corrplot"); library(corrplot)}

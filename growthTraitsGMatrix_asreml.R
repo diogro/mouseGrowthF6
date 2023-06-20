@@ -1,5 +1,6 @@
 source("./read_F6_phenotypes.R")
 
+library(AtchleyMice)
 library(asreml)
 library(snpReady)
 
@@ -12,6 +13,8 @@ Rs = array(model_growth$VCV[,grep("units", colnames(model_growth$VCV))],
            c(nrow(model_growth$VCV), 4, 4))
 R_mcmc = apply(Rs, 2:3, mean)
 
+growthF5F6 = mice_growth$F5F6
+growth_traits = mice_growth$traits
 growthF5F6 = growthF5F6[complete.cases(growthF5F6[,growth_traits]),]
 growthF5F6$animal = growthF5F6$ID
 
@@ -20,12 +23,13 @@ F5_ids = unique(c(growthF5F6$Pat_ID[growthF5F6$ID %in% F6_ids], growthF5F6$Mat_I
 F5F6_ids = c(F6_ids, F5_ids)
 growthF5F6 = growthF5F6[growthF5F6$ID %in% F5F6_ids,]
 
+pedigree = mice_pedigree
 pedigree$id = factor(pedigree$id)
 pedigree$dam = factor(pedigree$dam)
 pedigree$sire = factor(pedigree$sire)
 names(pedigree)[1] = "ID"
 
-Ainv = asreml.Ainverse(pedigree)$ginv
+Ainv = ainverse(pedigree)
 
 n_traits = length(growth_traits)
 g_formula = paste0("cbind(", paste(growth_traits, collapse = ", "), ") ~ trait + trait:Sex")
@@ -56,14 +60,11 @@ sv$Value[21] = 0.7
 sv$Constraint[21] = "F"
 sv$Value[17] = 0.7
 sv$Constraint[17] = "F"
-
+data_growth$animal = as.factor(data_growth$animal)
 growth_animal_asr = asreml(as.formula(g_formula),
-                           random = ~ us(trait):ped(ID), 
+                           random = ~ us(trait):vm(animal, Ainv), 
                            rcov = ~ units:us(trait),
-                           ginverse = list(ID = Ainv), 
-                           data = data_growth,
-                           G.param = sv, 
-                           R.param = sv)
+                           data = data_growth)
 G = matrix(NA, n_traits, n_traits)
 G[upper.tri(G, diag = TRUE)] = growth_animal_asr$G.param$`trait:ped(ID)`$trait$initial
 G[lower.tri(G)] = t(G)[lower.tri(G)]
