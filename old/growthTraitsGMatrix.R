@@ -1,31 +1,41 @@
 source("./read_F6_phenotypes.R")
-library(evolqg)
-library(corrplot)
+growthF5F6 = mice_growth$F5F6
 
-growthF5F6 = growthF5F6[complete.cases(growthF5F6[,growth_traits]),]
+library(stanAnimal)
+
+growthF5F6 = growthF5F6[complete.cases(growthF5F6[,mice_growth$traits]),]
 growthF5F6$animal = growthF5F6$ID
 
 F6_ids = growthF5F6$ID[growthF5F6$Gen == "F6"]
 F5_ids = unique(c(growthF5F6$Pat_ID[growthF5F6$ID %in% F6_ids], growthF5F6$Mat_ID[growthF5F6$ID %in% F6_ids]))
 F5F6_ids = c(F6_ids, F5_ids)
-ginverse = inverseA(pedigree, F5F6_ids)
-Ainv = ginverse$Ainv
-A = solve(Ainv + 1e-3*diag(nrow(Ainv)))
-dimnames(A) = list(rownames(Ainv), rownames(Ainv))
-if(isSymmetric(A)){A = (A + t(A))/2 
-} else stop("A not symmetric")
+A = makeA(mice_pedigree)
 
 length(levels(factor(growthF5F6$ID)))
-length(rownames(Ainv))
+length(rownames(A))
 
-levels(factor(growthF5F6$ID))[!levels(factor(growthF5F6$ID)) %in% rownames(Ainv)]
+levels(factor(growthF5F6$ID))[!levels(factor(growthF5F6$ID)) %in% rownames(A)]
 
-n_traits = length(growth_traits)
-g_formula = paste0("cbind(", paste(growth_traits, collapse = ", "), ") ~ trait + trait:Sex - 1")
+g_formula = paste0("cbind(", paste(mice_growth$traits, collapse = ", "), ") ~ Sex")
+model_input = genAnimalModelInput(g_formula, growthF5F6, A)
+stan_animal_model  = lmm_animal(model_input$Y, model_input$X, model_input$A, chains = 4, cores = 4)
+#write_rds(list(fit = stan_animal_model, data = model_input), file = "./Rdatas/growth_9trait_stanAnimalModel.rds")
+summary(stan_animal_model, pars = "corrG")
+
+colMeans(stan_animal_model@G)
+growth_animal = rstan::extract(stan_animal_model)
+colMeans(growth_animal$G)
+colMeans(growth_animal$L_sigma)
+
+corrplot.mixed(colMeans(growth_animal$corrG), upper = "ellipse")
+
+
+n_traits = length(mice_growth$traits)
+g_formula = paste0("cbind(", paste(mice_growth$traits, collapse = ", "), ") ~ trait + trait:Sex - 1")
 
 growthF5F6_std = growthF5F6
-growthF5F6_std[,growth_traits] = scale(growthF5F6_std[,growth_traits])
-growthF5F6_sd = apply(growthF5F6[,growth_traits], 2, sd)
+growthF5F6_std[,mice_growth$traits] = scale(growthF5F6_std[,mice_growth$traits])
+growthF5F6_sd = apply(growthF5F6[,mice_growth$traits], 2, sd)
 prior_bi <- list(G = list(G1 = list(V = diag(n_traits), n = 1.002)),
                  R = list(V = diag(n_traits), n = 1.002))
 model_growth <- MCMCglmm(as.formula(g_formula),
@@ -46,8 +56,14 @@ G = apply(Gs, 2:3, mean)
 R = apply(Rs, 2:3, mean)
 corrGs = aaply(Gs, 1, cov2cor)
 corrG = apply(corrGs, 2:3, mean)
-P = CalculateMatrix(lm(as.matrix(growthF5F6[,growth_traits]) ~ growthF5F6$Sex))
-corrP = cor(residuals(lm(as.matrix(growthF5F6[,growth_traits])~growthF5F6$Sex)))
+
+par(mfrow = c(1, 2))
+corrplot.mixed(colMeans(growth_animal$corrG), upper = "ellipse")
+corrplot.mixed(cov2cor(G), upper = "ellipse")
+
+
+P = CalculateMatrix(lm(as.matrix(growthF5F6[,mice_growth$traits]) ~ growthF5F6$Sex))
+corrP = cor(residuals(lm(as.matrix(growthF5F6[,mice_growth$traits]) ~ growthF5F6$Sex)))
 
 colnames(corrG) = c("0 to 14\ndays", "14 to 28\ndays", "28 to 42\ndays", "42 to 56\ndays")
 diag(corrG) = 0

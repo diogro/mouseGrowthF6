@@ -17,22 +17,17 @@ data {
     vector[M] time;                   // times
     int<lower=1, upper=10> n_times;   // number of time intervals
     int time_int[M];               // which time class?
-    cov_matrix[N]   R; // known covariance matrix
-}
-transformed data{
-  matrix[N, N] LR;
-  LR = cholesky_decompose(R);
 }
 
 parameters {
   real<lower=0> sigma[n_times];
 
-  real A_0;
+  real<lower = 0> A_0;
   real A_sex;
   vector[N] A_tilde;
   real<lower=0> sigma_A;
     
-  real mu_0;
+  real<lower = 0> mu_0;
   real mu_sex;
   vector[N] mu_tilde;
   real<lower=0> sigma_mu;
@@ -41,6 +36,7 @@ parameters {
   real lambda_sex;
   vector[N] lambda_tilde;
   real<lower=0> sigma_lambda;
+  
 }
 
 transformed parameters{
@@ -52,9 +48,9 @@ transformed parameters{
   vector[N] mu_i;
   vector[N] lambda_i;
   
-  A_i =      sqrt(sigma_A) * (A_tilde);
-  mu_i =     sqrt(sigma_mu) * (mu_tilde);
-  lambda_i = sqrt(sigma_lambda) * (lambda_tilde);
+  A_i = A_tilde * sigma_A;
+  mu_i = mu_tilde * sigma_mu;
+  lambda_i = lambda_tilde * sigma_lambda;
   
   A      = 10 * (A_0 + sex *      A_sex +      A_i);
   mu     =      mu_0 + sex *     mu_sex +     mu_i;
@@ -74,18 +70,18 @@ model {
     y ~ normal(x, x_sigma);
   }
   
-  mu_0 ~ normal(0.0, 1.0);
-  A_0 ~ normal(0, 2.0);
-  lambda_0 ~ normal(0.0, 2.0);
+  mu_0 ~ normal(0.0, 1);
+  A_0 ~ normal(0, 1.0);
+  lambda_0 ~ normal(0.0, 1.0);
   
-  A_sex ~ normal(0.0, .5);
-  mu_sex ~ normal(0.0, .5);
-  lambda_sex ~ normal(0.0, .5);
+  A_sex ~ normal(0.0, 1);
+  mu_sex ~ normal(0.0, 0.1);
+  lambda_sex ~ normal(0.0, 1.0);
   
   sigma ~ normal(0, 1);
   
-  sigma_A ~ normal(0, 1);
-  sigma_mu ~ normal(0, 0.1);
+  sigma_A ~ normal(0, 0.3);
+  sigma_mu ~ normal(0, 0.05);
   sigma_lambda ~ normal(0, 1);
 
   A_tilde ~ normal(0, 1);

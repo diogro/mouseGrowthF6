@@ -2,7 +2,11 @@ source("./read_F6_phenotypes.R")
 
 library(AtchleyMice)
 library(asreml)
-library(snpReady)
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install("impute")
+if(!require(snpReady)){install.packages("snpReady"); library(snpReady)}
+
 
 load("./data/growthGfitF5F6_2w.Rdata")
 Gs = array(model_growth$VCV[,grep("animal", colnames(model_growth$VCV))], 
@@ -38,20 +42,23 @@ growthF5F6_std = growthF5F6
 growthF5F6_std[,growth_traits] = scale(growthF5F6_std[,growth_traits])
 growthF5F6_sd = apply(growthF5F6[,growth_traits], 2, sd)
 
+
 data_growth = as.data.frame(growthF5F6_std)
+data_growth$fID = factor(data_growth$ID)
+data_growth$Sex = factor(data_growth$Sex)
+
 names(data_growth)
 
-traits = c(1, 2, 3, 4)
+traits = c(1:9)
 current_traits = growth_traits[traits]
 n_traits = length(current_traits)
 g_formula = paste0("cbind(", paste(current_traits, collapse = ", "), ") ~ trait + trait:Sex")
 growth_animal_asr_sv = asreml(as.formula(g_formula),
-                           random = ~ us(trait):ped(ID), 
-                           rcov = ~ units:us(trait),
-                           ginverse = list(ID = Ainv), 
+                           random = ~ us(trait):vm(fID, Ainv), 
+                           residual = ~ units:us(trait),
                            data = data_growth,
                            start.values  = TRUE)
-sv = growth_animal_asr_sv$gammas.table 
+sv = growth_animal_asr_sv$vparameters.table
 
 G_mcmc = apply(Gs, 2:3, mean)
 G_mcmc = G_mcmc[traits, traits]
@@ -65,21 +72,22 @@ growth_animal_asr = asreml(as.formula(g_formula),
                            random = ~ us(trait):vm(animal, Ainv), 
                            rcov = ~ units:us(trait),
                            data = data_growth)
+
 G = matrix(NA, n_traits, n_traits)
-G[upper.tri(G, diag = TRUE)] = growth_animal_asr$G.param$`trait:ped(ID)`$trait$initial
+G[upper.tri(G, diag = TRUE)] = growth_animal_asr$G.param$`trait:vm(fID, Ainv)`$trait$initial
 G[lower.tri(G)] = t(G)[lower.tri(G)]
 G_init = G
 G = G * outer(growthF5F6_sd, growthF5F6_sd)
 
 R = matrix(NA, n_traits, n_traits)
-R[upper.tri(R, diag = TRUE)] = growth_animal_asr$R.param$R$trait$initial
+R[upper.tri(R, diag = TRUE)] = growth_animal_asr$R.param$`units:trait`$trait$initial
 R[lower.tri(R)] = t(R)[lower.tri(R)]
 R = R * outer(growthF5F6_sd, growthF5F6_sd)
 
 corrG = cov2cor(G)
 colnames(corrG) = c("0 to 14\ndays", "14 to 28\ndays", "28 to 42\ndays", "42 to 56\ndays")
 diag(corrG) = 0
-corrplot.mixed(corrG, upper = "ellipse", mar = c(0, 0, 0, 0), cl.lim = c(-0.8, 0.8), addgrid.col = "black", is.corr = FALSE)
+corrplot.mixed(corrG, upper = "ellipse", mar = c(0, 0, 0, 0), cl.lim = c(-1, 1), addgrid.col = "black", is.corr = FALSE)
 
 calcG_asreml = function(traits){
     current_traits = growth_traits[traits]
